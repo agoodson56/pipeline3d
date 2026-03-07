@@ -2032,3 +2032,326 @@ kbd {
 .btn-icon:hover {
   opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   iOS Install Instructions
+   ═══════════════════════════════════════════════════════════════ */
+
+.ios-install-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ios-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ios-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Mobile Responsive — Premium Touch UX
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* Layout */
+  .main-content {
+    padding-left: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .top-bar {
+    padding: 10px 12px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  }
+
+  .top-bar h2 {
+    font-size: 16px;
+  }
+
+  .page-content {
+    padding: 12px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+  }
+
+  /* Cards */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .kpi-card {
+    padding: 14px;
+  }
+
+  .kpi-value {
+    font-size: 20px;
+  }
+
+  .kpi-label {
+    font-size: 11px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    padding: 14px;
+  }
+
+  /* Kanban mobile — horizontal scroll */
+  .kanban-board {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+  }
+
+  .kanban-column {
+    min-width: 260px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .kanban-card {
+    padding: 12px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Tables — horizontal scroll */
+  .data-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 600px;
+  }
+
+  /* Forms */
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px;
+    /* prevents iOS zoom on focus */
+  }
+
+  /* Modal */
+  .modal {
+    margin: 8px;
+    max-height: calc(100vh - 16px);
+    width: calc(100vw - 16px);
+    max-width: none;
+  }
+
+  .modal-wide {
+    max-width: none;
+  }
+
+  /* Buttons — bigger touch targets */
+  .btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .filter-chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Pipeline tabs */
+  .pipeline-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .pipeline-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Section header */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Integrations */
+  .integration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Automation flow */
+  .automation-flow {
+    flex-direction: column;
+  }
+
+  .automation-flow-arrow {
+    transform: rotate(90deg);
+  }
+
+  .automation-option-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Calendar */
+  .calendar-grid {
+    font-size: 11px;
+  }
+
+  /* Top bar actions */
+  .top-bar-actions {
+    gap: 4px;
+  }
+}
+
+/* Extra small screens (phones < 380px) */
+@media (max-width: 380px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-nav-item span:last-child {
+    font-size: 9px;
+  }
+
+  .kanban-column {
+    min-width: 240px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Standalone / Installed PWA Mode
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (display-mode: standalone) {
+
+  /* Extra top padding for status bar in standalone */
+  .top-bar {
+    padding-top: calc(env(safe-area-inset-top, 20px) + 10px);
+  }
+
+  /* Hide sidebar brand on mobile standalone (bottom nav used) */
+  @media (max-width: 768px) {
+    .sidebar {
+      display: none;
+    }
+
+    .mobile-overlay {
+      display: none;
+    }
+
+    .hamburger-btn {
+      display: none;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Smooth Touch Interactions
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (hover: none) and (pointer: coarse) {
+
+  /* Touch devices — larger tap targets */
+  .nav-item {
+    padding: 12px 16px;
+  }
+
+  .kanban-card {
+    padding: 14px;
+  }
+
+  .data-table td,
+  .data-table th {
+    padding: 12px 14px;
+  }
+
+  /* Disable hover effects that don't work on touch */
+  .kanban-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Active press state */
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .kanban-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  .nav-item:active {
+    background: var(--bg-hover);
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.9);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Form Textarea
+   ═══════════════════════════════════════════════════════════════ */
+
+.form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}

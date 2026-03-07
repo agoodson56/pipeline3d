@@ -7,12 +7,48 @@
     "background_color": "#0a0b0e",
     "theme_color": "#0a0b0e",
     "orientation": "any",
+    "categories": [
+        "business",
+        "productivity"
+    ],
     "icons": [
         {
             "src": "/logo.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "url": "/?view=dashboard",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "512x512"
+                }
+            ]
+        },
+        {
+            "name": "Pipeline",
+            "url": "/?view=pipeline",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "512x512"
+                }
+            ]
+        },
+        {
+            "name": "AI Coach",
+            "url": "/?view=ai",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "512x512"
+                }
+            ]
         }
     ]
 }

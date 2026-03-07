@@ -39,6 +39,11 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [cmdQuery, setCmdQuery] = useState('');
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [showIOSInstall, setShowIOSInstall] = useState(false);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   const [pipelines, setPipelines] = useState([]);
   const [deals, setDeals] = useState([]);
@@ -46,6 +51,24 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const [activities, setActivities] = useState([]);
   const [emails, setEmails] = useState([]);
+
+  // PWA Install prompt
+  useEffect(() => {
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone);
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setDeferredPrompt(null);
+    } else if (isIOS) {
+      setShowIOSInstall(true);
+    }
+  };
 
   const toast = useCallback((msg, type = 'success') => {
     const id = Date.now();
@@ -167,6 +190,13 @@ function App() {
               <span className="nav-icon">{n.icon}</span>{n.label}
             </div>
           ))}
+          {!isStandalone && (deferredPrompt || isIOS) && (
+            <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', marginTop: 8 }}>
+              <button className="btn btn-primary" style={{ width: '100%', fontSize: 13 }} onClick={handleInstall}>
+                📲 Install App
+              </button>
+            </div>
+          )}
         </nav>
       </aside>
 
@@ -235,6 +265,40 @@ function App() {
             {!cmdQuery && (
               <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: 12 }}>Type to search across all data, or navigate to any page.</div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* iOS Install Instructions Modal */}
+      {showIOSInstall && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowIOSInstall(false)}>
+          <div className="modal" style={{ maxWidth: 360 }}>
+            <div className="modal-header">
+              <h3>📲 Install Pipeline3D</h3>
+              <button className="modal-close" onClick={() => setShowIOSInstall(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <img src="/logo.png" alt="Pipeline3D" style={{ width: 72, height: 72, borderRadius: 16 }} />
+              </div>
+              <div className="ios-install-steps">
+                <div className="ios-step">
+                  <div className="ios-step-num">1</div>
+                  <div>Tap the <strong>Share</strong> button <span style={{ fontSize: 18 }}>⬆️</span> at the bottom of Safari</div>
+                </div>
+                <div className="ios-step">
+                  <div className="ios-step-num">2</div>
+                  <div>Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+                </div>
+                <div className="ios-step">
+                  <div className="ios-step-num">3</div>
+                  <div>Tap <strong>"Add"</strong> in the top right to confirm</div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={() => setShowIOSInstall(false)}>Got it!</button>
+            </div>
           </div>
         </div>
       )}
