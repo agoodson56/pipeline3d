@@ -99,6 +99,7 @@ function App() {
 
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
+          <img src="/logo.png" alt="Pipeline3D" style={{ width: 48, height: 48, borderRadius: 10, marginBottom: 8 }} />
           <h1>Pipeline3D</h1>
           <span>Sales CRM</span>
         </div>
