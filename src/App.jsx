@@ -16,6 +16,9 @@ import Integrations from './views/Integrations.jsx';
 import AICoach from './views/AICoach.jsx';
 import LeadCapture from './views/LeadCapture.jsx';
 import Settings from './views/Settings.jsx';
+import EmailSequences from './views/EmailSequences.jsx';
+import DataImport from './views/DataImport.jsx';
+import OnboardingTour from './views/OnboardingTour.jsx';
 
 const NAV = [
   { key: 'dashboard', icon: '📊', label: 'Dashboard', section: 'main' },
@@ -29,8 +32,10 @@ const NAV = [
   { key: 'emails', icon: '📧', label: 'Email', section: 'insights' },
   { key: 'ai', icon: '🧠', label: 'AI Coach', section: 'tools' },
   { key: 'automations', icon: '⚡', label: 'Automations', section: 'tools' },
+  { key: 'sequences', icon: '📨', label: 'Sequences', section: 'tools' },
   { key: 'integrations', icon: '🔌', label: 'Integrations', section: 'tools' },
   { key: 'leads', icon: '🧲', label: 'Lead Capture', section: 'tools' },
+  { key: 'import', icon: '📥', label: 'Data Import', section: 'tools' },
   { key: 'settings', icon: '⚙️', label: 'Settings', section: 'tools' },
 ];
 
@@ -46,6 +51,7 @@ function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showIOSInstall, setShowIOSInstall] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('p3d_toured'));
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
@@ -153,6 +159,8 @@ function App() {
       case 'automations': return <Automations {...viewProps} />;
       case 'integrations': return <Integrations {...viewProps} />;
       case 'leads': return <LeadCapture {...viewProps} />;
+      case 'sequences': return <EmailSequences {...viewProps} />;
+      case 'import': return <DataImport {...viewProps} />;
       case 'settings': return <Settings {...viewProps} />;
       default: return <Dashboard {...viewProps} />;
     }
@@ -305,6 +313,10 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {showOnboarding && (
+        <OnboardingTour onClose={() => { setShowOnboarding(false); localStorage.setItem('p3d_toured', '1'); }} onNavigate={navigate} />
       )}
 
       <div className="toast-container">

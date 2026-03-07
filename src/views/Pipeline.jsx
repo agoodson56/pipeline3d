@@ -293,6 +293,9 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                         <div className="modal-body">
                             <div className="detail-tabs">
                                 <button className={`detail-tab ${detailTab === 'details' ? 'active' : ''}`} onClick={() => setDetailTab('details')}>Details</button>
+                                <button className={`detail-tab ${detailTab === 'products' ? 'active' : ''}`} onClick={() => setDetailTab('products')}>
+                                    Products {selectedDeal.products?.length > 0 && `(${selectedDeal.products.length})`}
+                                </button>
                                 <button className={`detail-tab ${detailTab === 'notes' ? 'active' : ''}`} onClick={() => setDetailTab('notes')}>
                                     Notes {selectedDeal.notes?.length > 0 && `(${selectedDeal.notes.length})`}
                                 </button>
@@ -321,6 +324,60 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                         </div>
                                     </div>
                                 </>
+                            )}
+
+                            {detailTab === 'products' && (
+                                <div>
+                                    <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                                        <input id="prod-name" className="form-input" style={{ flex: 2 }} placeholder="Product / service name" />
+                                        <input id="prod-qty" className="form-input" style={{ width: 60 }} type="number" placeholder="Qty" defaultValue="1" />
+                                        <input id="prod-price" className="form-input" style={{ width: 100 }} type="number" placeholder="Unit $" />
+                                        <button className="btn btn-primary btn-sm" onClick={async () => {
+                                            const nm = document.getElementById('prod-name').value;
+                                            const qt = parseInt(document.getElementById('prod-qty').value) || 1;
+                                            const pr = parseFloat(document.getElementById('prod-price').value) || 0;
+                                            if (!nm) return;
+                                            const prods = [...(selectedDeal.products || []), { id: Date.now(), name: nm, qty: qt, price: pr, total: qt * pr }];
+                                            const totalVal = prods.reduce((s, p) => s + p.total, 0);
+                                            const updated = { ...selectedDeal, products: prods, value: totalVal };
+                                            try { await api.saveDeal(updated); await refreshDeals(); setSelectedDeal(updated); toast('Product added'); document.getElementById('prod-name').value = ''; document.getElementById('prod-price').value = ''; } catch (e) { toast(e.message, 'error'); }
+                                        }}>Add</button>
+                                    </div>
+                                    {(selectedDeal.products?.length > 0) ? (
+                                        <div>
+                                            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                                                <thead><tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 11, textTransform: 'uppercase' }}>
+                                                    <th style={{ textAlign: 'left', padding: '8px 4px' }}>Product</th>
+                                                    <th style={{ textAlign: 'center', padding: '8px 4px' }}>Qty</th>
+                                                    <th style={{ textAlign: 'right', padding: '8px 4px' }}>Unit Price</th>
+                                                    <th style={{ textAlign: 'right', padding: '8px 4px' }}>Total</th>
+                                                    <th></th>
+                                                </tr></thead>
+                                                <tbody>{selectedDeal.products.map((p, i) => (
+                                                    <tr key={p.id || i} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                        <td style={{ padding: '8px 4px', fontWeight: 500 }}>{p.name}</td>
+                                                        <td style={{ padding: '8px 4px', textAlign: 'center' }}>{p.qty}</td>
+                                                        <td style={{ padding: '8px 4px', textAlign: 'right' }}>{fmt(p.price)}</td>
+                                                        <td style={{ padding: '8px 4px', textAlign: 'right', fontWeight: 600, color: '#10b981' }}>{fmt(p.total)}</td>
+                                                        <td style={{ padding: '4px', textAlign: 'right' }}>
+                                                            <button className="btn-icon" onClick={async () => {
+                                                                const prods = selectedDeal.products.filter(x => x.id !== p.id);
+                                                                const totalVal = prods.reduce((s, x) => s + x.total, 0);
+                                                                const updated = { ...selectedDeal, products: prods, value: totalVal };
+                                                                try { await api.saveDeal(updated); await refreshDeals(); setSelectedDeal(updated); toast('Removed'); } catch (e) { toast(e.message, 'error'); }
+                                                            }}>🗑</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}</tbody>
+                                            </table>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 4px', borderTop: '2px solid var(--border)', fontWeight: 700, fontSize: 15 }}>
+                                                Deal Total: <span style={{ color: '#10b981', marginLeft: 8 }}>{fmt(selectedDeal.products.reduce((s, p) => s + p.total, 0))}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="empty-state" style={{ padding: 24 }}><p>No products. Add line items above to build a quote.</p></div>
+                                    )}
+                                </div>
                             )}
 
                             {detailTab === 'notes' && (
