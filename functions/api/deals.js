@@ -1,4 +1,4 @@
-import { json, onRequestOptions as opts } from './_helpers.js';
+import { json, errorResponse, onRequestOptions as opts, validateRequired, validateString, validateNumber } from './_helpers.js';
 export { opts as onRequestOptions };
 
 function serializeDeal(d) {
@@ -15,16 +15,24 @@ function serializeDeal(d) {
     };
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
     try {
         const { results } = await env.DB.prepare('SELECT * FROM deals ORDER BY created_at DESC').all();
-        return json(results.map(serializeDeal));
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json(results.map(serializeDeal), 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestPost({ request, env }) {
     try {
         const d = await request.json();
+        // Validate
+        const reqErr = validateRequired(d, ['title', 'stage']);
+        if (reqErr) return json({ error: reqErr }, 400, request);
+        const strErr = validateString(d.title, 'title', 255) || validateString(d.stage, 'stage', 100);
+        if (strErr) return json({ error: strErr }, 400, request);
+        const numErr = validateNumber(d.value, 'value', 0) || validateNumber(d.probability, 'probability', 0, 100);
+        if (numErr) return json({ error: numErr }, 400, request);
+
         await env.DB.prepare(`INSERT OR REPLACE INTO deals
       (id, title, value, stage, pipeline_id, contact, contact_email, company_id, company,
        probability, days_open, label, expected_close, notes, history, custom_fields, updated_at)
@@ -34,13 +42,14 @@ export async function onRequestPost({ request, env }) {
                 d.expectedClose, JSON.stringify(d.notes || []),
                 JSON.stringify(d.history || []), JSON.stringify(d.customFields || {}))
             .run();
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestPut({ request, env }) {
     try {
         const items = await request.json();
+        if (!Array.isArray(items)) return json({ error: 'Expected an array' }, 400, request);
         const batch = items.map(d =>
             env.DB.prepare(`INSERT OR REPLACE INTO deals
         (id, title, value, stage, pipeline_id, contact, contact_email, company_id, company,
@@ -52,19 +61,21 @@ export async function onRequestPut({ request, env }) {
                     JSON.stringify(d.history || []), JSON.stringify(d.customFields || {}))
         );
         await env.DB.batch(batch);
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestDelete({ request, env }) {
     try {
         const { id } = await request.json();
+        if (id === undefined || id === null) return json({ error: 'id is required' }, 400, request);
         if (Array.isArray(id)) {
+            if (id.length > 100) return json({ error: 'Maximum 100 deletions per request' }, 400, request);
             const batch = id.map(i => env.DB.prepare('DELETE FROM deals WHERE id = ?').bind(i));
             await env.DB.batch(batch);
         } else {
             await env.DB.prepare('DELETE FROM deals WHERE id = ?').bind(id).run();
         }
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }

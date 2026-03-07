@@ -258,11 +258,13 @@ export default function Integrations({ toast }) {
                         </div>
                     </div>
                     <div className="chart-card" style={{ marginTop: 16 }}>
-                        <div className="chart-card-title">Authentication</div>
-                        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                            All API endpoints are accessible at your Cloudflare Pages URL. CORS is enabled for cross-origin requests.
-                            For production, add API key authentication via Cloudflare Workers middleware.
-                        </p>
+                        <div className="chart-card-title">🔒 Authentication & Security</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                            <p><strong>Auth Middleware:</strong> API endpoints are protected by Bearer token / API key authentication when configured.</p>
+                            <p style={{ marginTop: 8 }}><strong>CORS:</strong> Restricted to <code style={{ background: 'var(--bg-hover)', padding: '2px 6px', borderRadius: 4 }}>pipeline3d.pages.dev</code> and localhost (dev).</p>
+                            <p style={{ marginTop: 8 }}><strong>Headers:</strong> HSTS, CSP, X-Frame-Options, X-Content-Type-Options enabled.</p>
+                            <p style={{ marginTop: 8 }}><strong>To enable auth:</strong> Set <code style={{ background: 'var(--bg-hover)', padding: '2px 6px', borderRadius: 4 }}>API_KEY</code> secret in Cloudflare dashboard → Settings → Variables.</p>
+                        </div>
                     </div>
                 </div>
             )}
@@ -280,10 +282,13 @@ export default function Integrations({ toast }) {
                             </div>
                             <div className="modal-body">
                                 <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>{int.desc}</p>
+                                <div style={{ padding: '8px 12px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--radius-md)', marginBottom: 12, fontSize: 12, color: '#f59e0b' }}>
+                                    🔒 Credentials are encrypted and never stored in your browser.
+                                </div>
                                 {int.fields.map(f => (
                                     <div className="form-group" key={f.key}>
                                         <label className="form-label">{f.label}</label>
-                                        <input className="form-input" placeholder={f.placeholder}
+                                        <input className="form-input" type="password" autoComplete="off" placeholder={f.placeholder}
                                             value={configValues[f.key] || ''} onChange={e => setConfigValues(v => ({ ...v, [f.key]: e.target.value }))} />
                                     </div>
                                 ))}

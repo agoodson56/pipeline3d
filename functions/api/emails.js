@@ -1,4 +1,4 @@
-import { json, onRequestOptions as opts } from './_helpers.js';
+import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
 export { opts as onRequestOptions };
 
 function serialize(e) {
@@ -11,11 +11,11 @@ function serialize(e) {
     };
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
     try {
         const { results } = await env.DB.prepare('SELECT * FROM email_log ORDER BY created_at DESC').all();
-        return json(results.map(serialize));
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json(results.map(serialize), 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestPost({ request, env }) {
@@ -29,13 +29,14 @@ export async function onRequestPost({ request, env }) {
                 e.sentAt, e.opened ? 1 : 0, e.openedAt, e.clicked ? 1 : 0, e.clickedAt,
                 e.engScore, e.openProb, e.clickProb, e.tip)
             .run();
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestPut({ request, env }) {
     try {
         const items = await request.json();
+        if (!Array.isArray(items)) return json({ error: 'Expected an array' }, 400, request);
         const batch = items.map(e =>
             env.DB.prepare(`INSERT OR REPLACE INTO email_log
         (id, deal_id, deal_title, deal_stage, contact, email, subject, type,
@@ -46,18 +47,24 @@ export async function onRequestPut({ request, env }) {
                     e.engScore, e.openProb, e.clickProb, e.tip)
         );
         await env.DB.batch(batch);
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
 
 export async function onRequestDelete({ request, env }) {
     try {
-        const { id } = await request.json();
+        const body = await request.json();
+        const { id } = body;
+        if (id === undefined || id === null) return json({ error: 'id is required' }, 400, request);
+        // Bulk delete requires explicit confirmation flag
         if (id === 'all') {
+            if (!body.confirm) {
+                return json({ error: 'Bulk delete requires { confirm: true }' }, 400, request);
+            }
             await env.DB.prepare('DELETE FROM email_log').run();
         } else {
             await env.DB.prepare('DELETE FROM email_log WHERE id = ?').bind(id).run();
         }
-        return json({ success: true });
-    } catch (e) { return json({ error: e.message }, 500); }
+        return json({ success: true }, 200, request);
+    } catch (e) { return errorResponse(e, request); }
 }
