@@ -8,20 +8,29 @@ import Companies from './views/Companies.jsx';
 import Activities from './views/Activities.jsx';
 import CalendarView from './views/CalendarView.jsx';
 import Forecast from './views/Forecast.jsx';
-import EmailTracking from './views/EmailTracking.jsx';
 import Reports from './views/Reports.jsx';
+import EmailTracking from './views/EmailTracking.jsx';
+import EmailComposer from './views/EmailComposer.jsx';
+import Automations from './views/Automations.jsx';
+import Integrations from './views/Integrations.jsx';
+import AICoach from './views/AICoach.jsx';
 
 const NAV = [
-  { key: 'dashboard', icon: '📊', label: 'Dashboard' },
-  { key: 'pipeline', icon: '🔀', label: 'Pipeline' },
-  { key: 'contacts', icon: '👥', label: 'Contacts' },
-  { key: 'companies', icon: '🏢', label: 'Companies' },
-  { key: 'activities', icon: '✅', label: 'Activities' },
-  { key: 'calendar', icon: '📅', label: 'Calendar' },
-  { key: 'forecast', icon: '📈', label: 'Forecast' },
-  { key: 'reports', icon: '📉', label: 'Reports' },
-  { key: 'emails', icon: '📧', label: 'Email Tracking' },
+  { key: 'dashboard', icon: '📊', label: 'Dashboard', section: 'main' },
+  { key: 'pipeline', icon: '🔀', label: 'Pipeline', section: 'main' },
+  { key: 'contacts', icon: '👥', label: 'Contacts', section: 'main' },
+  { key: 'companies', icon: '🏢', label: 'Companies', section: 'main' },
+  { key: 'activities', icon: '✅', label: 'Activities', section: 'main' },
+  { key: 'calendar', icon: '📅', label: 'Calendar', section: 'insights' },
+  { key: 'forecast', icon: '📈', label: 'Forecast', section: 'insights' },
+  { key: 'reports', icon: '📉', label: 'Reports', section: 'insights' },
+  { key: 'emails', icon: '📧', label: 'Email', section: 'insights' },
+  { key: 'ai', icon: '🧠', label: 'AI Coach', section: 'tools' },
+  { key: 'automations', icon: '⚡', label: 'Automations', section: 'tools' },
+  { key: 'integrations', icon: '🔌', label: 'Integrations', section: 'tools' },
 ];
+
+const MOBILE_NAV = ['dashboard', 'pipeline', 'contacts', 'activities', 'ai'];
 
 function App() {
   const [view, setView] = useState('dashboard');
@@ -61,42 +70,28 @@ function App() {
     load();
   }, [toast]);
 
-  // Ctrl+K keyboard shortcut for Command Palette
+  // Ctrl+K keyboard shortcut
   useEffect(() => {
     const handler = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setCmdOpen(o => !o);
-        setCmdQuery('');
-      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(o => !o); setCmdQuery(''); }
       if (e.key === 'Escape') setCmdOpen(false);
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  // Command palette search results
   const cmdResults = useMemo(() => {
     if (!cmdQuery.trim()) return [];
     const q = cmdQuery.toLowerCase();
     const results = [];
-
-    // Search deals
     deals.filter(d => d.title?.toLowerCase().includes(q) || d.company?.toLowerCase().includes(q))
       .slice(0, 4).forEach(d => results.push({ type: 'deal', icon: '💰', label: d.title, sub: d.company || d.stage, action: () => setView('pipeline') }));
-
-    // Search contacts
     contacts.filter(c => c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q))
       .slice(0, 4).forEach(c => results.push({ type: 'contact', icon: '👤', label: c.name, sub: c.company || c.email, action: () => setView('contacts') }));
-
-    // Search companies
     companies.filter(c => c.name?.toLowerCase().includes(q) || c.industry?.toLowerCase().includes(q))
       .slice(0, 3).forEach(c => results.push({ type: 'company', icon: '🏢', label: c.name, sub: c.industry, action: () => setView('companies') }));
-
-    // Search nav
     NAV.filter(n => n.label.toLowerCase().includes(q))
       .forEach(n => results.push({ type: 'nav', icon: n.icon, label: `Go to ${n.label}`, sub: '', action: () => setView(n.key) }));
-
     return results.slice(0, 10);
   }, [cmdQuery, deals, contacts, companies]);
 
@@ -109,9 +104,7 @@ function App() {
   const refreshEmails = async () => { try { setEmails(await api.getEmails()); } catch { } };
   const refreshPipelines = async () => { try { setPipelines(await api.getPipelines()); } catch { } };
 
-  if (loading) {
-    return <div className="loading-screen"><div className="spinner" /></div>;
-  }
+  if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
 
   const viewProps = {
     deals, contacts, companies, activities, emails, pipelines, toast,
@@ -129,11 +122,17 @@ function App() {
       case 'forecast': return <Forecast {...viewProps} />;
       case 'reports': return <Reports {...viewProps} />;
       case 'emails': return <EmailTracking {...viewProps} />;
+      case 'ai': return <AICoach {...viewProps} />;
+      case 'automations': return <Automations {...viewProps} />;
+      case 'integrations': return <Integrations {...viewProps} />;
       default: return <Dashboard {...viewProps} />;
     }
   };
 
   const currentNav = NAV.find(n => n.key === view) || NAV[0];
+  const mainNav = NAV.filter(n => n.section === 'main');
+  const insightsNav = NAV.filter(n => n.section === 'insights');
+  const toolsNav = NAV.filter(n => n.section === 'tools');
 
   return (
     <div className="app-layout">
@@ -147,7 +146,7 @@ function App() {
         </div>
         <nav className="sidebar-nav">
           <div className="nav-section-label">Main</div>
-          {NAV.slice(0, 5).map(n => (
+          {mainNav.map(n => (
             <div key={n.key} className={`nav-item ${view === n.key ? 'active' : ''}`} onClick={() => navigate(n.key)}>
               <span className="nav-icon">{n.icon}</span>
               {n.label}
@@ -157,10 +156,15 @@ function App() {
             </div>
           ))}
           <div className="nav-section-label">Insights</div>
-          {NAV.slice(5).map(n => (
+          {insightsNav.map(n => (
             <div key={n.key} className={`nav-item ${view === n.key ? 'active' : ''}`} onClick={() => navigate(n.key)}>
-              <span className="nav-icon">{n.icon}</span>
-              {n.label}
+              <span className="nav-icon">{n.icon}</span>{n.label}
+            </div>
+          ))}
+          <div className="nav-section-label">Tools</div>
+          {toolsNav.map(n => (
+            <div key={n.key} className={`nav-item ${view === n.key ? 'active' : ''}`} onClick={() => navigate(n.key)}>
+              <span className="nav-icon">{n.icon}</span>{n.label}
             </div>
           ))}
         </nav>
@@ -173,8 +177,9 @@ function App() {
             <h2>{currentNav.icon} {currentNav.label}</h2>
           </div>
           <div className="top-bar-actions">
+            <EmailComposer {...viewProps} />
             <button className="btn btn-ghost btn-sm" onClick={() => { setCmdOpen(true); setCmdQuery(''); }}>
-              🔍 Search <kbd style={{ marginLeft: 6, padding: '2px 6px', background: 'rgba(255,255,255,0.06)', borderRadius: 4, fontSize: 11 }}>⌘K</kbd>
+              🔍 Search <kbd>⌘K</kbd>
             </button>
           </div>
         </header>
@@ -183,33 +188,40 @@ function App() {
         </div>
       </main>
 
-      {/* ─── Command Palette ─── */}
+      {/* Mobile Bottom Nav */}
+      <nav className="mobile-bottom-nav">
+        {MOBILE_NAV.map(key => {
+          const n = NAV.find(x => x.key === key);
+          return (
+            <div key={key} className={`mobile-nav-item ${view === key ? 'active' : ''}`} onClick={() => setView(key)}>
+              <span>{n.icon}</span>
+              <span>{n.label}</span>
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* Command Palette */}
       {cmdOpen && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setCmdOpen(false)} style={{ alignItems: 'flex-start', paddingTop: '15vh' }}>
           <div style={{ width: '100%', maxWidth: 520, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', overflow: 'hidden', animation: 'slideUp 0.2s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 16 }}>🔍</span>
-              <input
-                autoFocus
-                value={cmdQuery}
-                onChange={e => setCmdQuery(e.target.value)}
+              <input autoFocus value={cmdQuery} onChange={e => setCmdQuery(e.target.value)}
                 placeholder="Search deals, contacts, companies, or navigate…"
-                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 15, fontFamily: 'inherit' }}
-              />
-              <kbd style={{ padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 4, fontSize: 11, color: 'var(--text-muted)' }}>ESC</kbd>
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 15, fontFamily: 'inherit' }} />
+              <kbd>ESC</kbd>
             </div>
             {cmdResults.length > 0 && (
               <div style={{ maxHeight: 320, overflowY: 'auto' }}>
                 {cmdResults.map((r, i) => (
-                  <div key={i}
-                    onClick={() => { r.action(); setCmdOpen(false); }}
+                  <div key={i} onClick={() => { r.action(); setCmdOpen(false); }}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <span style={{ fontSize: 18 }}>{r.icon}</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.label}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{r.label}</div>
                       {r.sub && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.sub}</div>}
                     </div>
                     <span className="tag tag-accent" style={{ fontSize: 10, textTransform: 'capitalize' }}>{r.type}</span>
@@ -221,9 +233,7 @@ function App() {
               <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No results for "{cmdQuery}"</div>
             )}
             {!cmdQuery && (
-              <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: 12 }}>
-                Type to search across deals, contacts, companies, or navigate to any page.
-              </div>
+              <div style={{ padding: 16, color: 'var(--text-muted)', fontSize: 12 }}>Type to search across all data, or navigate to any page.</div>
             )}
           </div>
         </div>
