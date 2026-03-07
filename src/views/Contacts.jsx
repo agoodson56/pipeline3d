@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import * as api from '../api.js';
+import { exportCSV } from '../utils.js';
 
 export default function Contacts({ contacts, companies, toast, refreshContacts }) {
     const [showAdd, setShowAdd] = useState(false);
@@ -52,6 +53,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                         <span className="search-icon">🔍</span>
                         <input placeholder="Search contacts…" value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
+                    <button className="btn btn-ghost" onClick={() => { exportCSV(contacts.map(c => ({ Name: c.name, Email: c.email, Phone: c.phone, Company: c.company, Role: c.role, Tags: (c.tags || []).join(', ') })), 'pipeline3d_contacts.csv'); toast('Exported!'); }}>⬇ CSV</button>
                     <button className="btn btn-primary" onClick={() => setShowAdd(true)}>+ Add Contact</button>
                 </div>
             </div>
