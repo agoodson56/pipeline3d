@@ -14,6 +14,8 @@ import EmailComposer from './views/EmailComposer.jsx';
 import Automations from './views/Automations.jsx';
 import Integrations from './views/Integrations.jsx';
 import AICoach from './views/AICoach.jsx';
+import LeadCapture from './views/LeadCapture.jsx';
+import Settings from './views/Settings.jsx';
 
 const NAV = [
   { key: 'dashboard', icon: '📊', label: 'Dashboard', section: 'main' },
@@ -28,6 +30,8 @@ const NAV = [
   { key: 'ai', icon: '🧠', label: 'AI Coach', section: 'tools' },
   { key: 'automations', icon: '⚡', label: 'Automations', section: 'tools' },
   { key: 'integrations', icon: '🔌', label: 'Integrations', section: 'tools' },
+  { key: 'leads', icon: '🧲', label: 'Lead Capture', section: 'tools' },
+  { key: 'settings', icon: '⚙️', label: 'Settings', section: 'tools' },
 ];
 
 const MOBILE_NAV = ['dashboard', 'pipeline', 'contacts', 'activities', 'ai'];
@@ -148,6 +152,8 @@ function App() {
       case 'ai': return <AICoach {...viewProps} />;
       case 'automations': return <Automations {...viewProps} />;
       case 'integrations': return <Integrations {...viewProps} />;
+      case 'leads': return <LeadCapture {...viewProps} />;
+      case 'settings': return <Settings {...viewProps} />;
       default: return <Dashboard {...viewProps} />;
     }
   };

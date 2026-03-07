@@ -2033,6 +2033,76 @@ kbd {
    iOS Install Instructions
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   Deal Rotting Indicators
+   ═══════════════════════════════════════════════════════════════ */
+
+.rot-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rot-fresh {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.rot-mild {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.rot-warn {
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
+}
+
+.rot-critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.kanban-card.rotting-warning {
+  border-left: 3px solid #f97316;
+}
+
+.kanban-card.rotting-critical {
+  border-left: 3px solid #ef4444;
+  animation: rotPulse 3s ease-in-out infinite;
+}
+
+@keyframes rotPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.15);
+  }
+}
+
+.rot-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.rot-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  transition: width 0.6s ease;
+}
+
 .ios-install-steps {
   display: flex;
   flex-direction: column;

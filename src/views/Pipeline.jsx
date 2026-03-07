@@ -182,18 +182,31 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                             </div>
                             <div className="kanban-cards">
                                 {stageDeals.map(deal => (
-                                    <div className="kanban-card" key={deal.id}
+                                    <div className={`kanban-card ${deal.daysOpen > 60 ? 'rotting-critical' : deal.daysOpen > 30 ? 'rotting-warning' : ''}`} key={deal.id}
                                         draggable
                                         onDragStart={(e) => handleDragStart(e, deal)}
                                         onDragEnd={handleDragEnd}
                                         onClick={() => { setSelectedDeal(deal); setDetailTab('details'); setNoteText(''); }}
                                     >
-                                        <div className="kanban-card-title">{deal.title}</div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div className="kanban-card-title">{deal.title}</div>
+                                            {deal.daysOpen > 0 && (
+                                                <span className={`rot-badge ${deal.daysOpen > 60 ? 'rot-critical' : deal.daysOpen > 30 ? 'rot-warn' : deal.daysOpen > 14 ? 'rot-mild' : 'rot-fresh'}`}
+                                                    title={`${deal.daysOpen} days open`}>
+                                                    {deal.daysOpen}d
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="kanban-card-company">{deal.company || deal.contact || '—'}</div>
                                         <div className="kanban-card-footer">
                                             <div className="kanban-card-value">{fmt(deal.value)}</div>
                                             <span className={`kanban-card-label label-${deal.label}`}>{deal.label}</span>
                                         </div>
+                                        {deal.daysOpen > 30 && (
+                                            <div className="rot-bar">
+                                                <div className="rot-bar-fill" style={{ width: `${Math.min(100, (deal.daysOpen / 90) * 100)}%` }} />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 {stageDeals.length === 0 && (
