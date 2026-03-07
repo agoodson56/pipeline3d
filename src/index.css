@@ -126,27 +126,23 @@ body {
 }
 
 .sidebar-brand {
-  padding: 24px 20px 20px;
+  padding: 0;
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  width: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .sidebar-brand h1 {
-  font-size: 20px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #a5b4fc, #6366f1, #818cf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
+  display: none;
 }
 
 .sidebar-brand span {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  display: block;
-  margin-top: 4px;
+  display: none;
 }
 
 .sidebar-nav {
