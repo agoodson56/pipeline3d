@@ -5,4 +5,4 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "pipeline3d-db"
-database_id = "local"
+database_id = "ca45c49c-56de-4979-b715-8c81b33306b9"
