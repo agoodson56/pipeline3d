@@ -1,29 +1,106 @@
 import { useState } from 'react';
 
+const CATEGORIES = [
+    { id: 'comms', name: 'Communication', icon: '💬' },
+    { id: 'productivity', name: 'Productivity', icon: '📋' },
+    { id: 'finance', name: 'Finance & Billing', icon: '💰' },
+    { id: 'marketing', name: 'Marketing & Outreach', icon: '📣' },
+    { id: 'dev', name: 'Developer & Custom', icon: '⚙️' },
+];
+
 const BUILT_IN = [
+    // Communication
     {
-        id: 'slack', name: 'Slack', icon: '💬', desc: 'Post deal updates to Slack channels', connected: false,
+        id: 'gmail', name: 'Gmail (Two-Way Sync)', icon: '📧', category: 'comms', desc: 'Two-way email sync — see all Gmail conversations inside deal cards. Auto-log sent/received emails.', connected: false,
+        fields: [{ key: 'oauthToken', label: 'Google OAuth Token', placeholder: 'Connect via Google OAuth' }]
+    },
+    {
+        id: 'outlook', name: 'Outlook (Two-Way Sync)', icon: '📬', category: 'comms', desc: 'Two-way sync with Microsoft 365. Emails auto-linked to deals and contacts. Smart BCC fallback.', connected: false,
+        fields: [{ key: 'oauthToken', label: 'Microsoft OAuth Token', placeholder: 'Connect via Microsoft OAuth' }]
+    },
+    {
+        id: 'slack', name: 'Slack', icon: '💬', category: 'comms', desc: 'Post deal updates to Slack channels. Get notified on stage changes, wins, and stale deals.', connected: false,
         fields: [{ key: 'webhookUrl', label: 'Webhook URL', placeholder: 'https://hooks.slack.com/services/...' }]
     },
     {
-        id: 'teams', name: 'Microsoft Teams', icon: '👥', desc: 'Send notifications to Teams channels', connected: false,
+        id: 'teams', name: 'Microsoft Teams', icon: '👥', category: 'comms', desc: 'Send deal notifications to Teams channels. Real-time alerts on pipeline changes.', connected: false,
         fields: [{ key: 'webhookUrl', label: 'Incoming Webhook URL', placeholder: 'https://outlook.office.com/webhook/...' }]
     },
     {
-        id: 'zapier', name: 'Zapier', icon: '⚡', desc: 'Connect to 6,000+ apps via Zapier webhooks', connected: false,
-        fields: [{ key: 'webhookUrl', label: 'Zapier Webhook URL', placeholder: 'https://hooks.zapier.com/hooks/catch/...' }]
+        id: 'twilio', name: 'Twilio', icon: '📱', category: 'comms', desc: 'Send SMS notifications on deal events. Auto-text follow-ups and reminders.', connected: false,
+        fields: [{ key: 'accountSid', label: 'Account SID', placeholder: 'AC...' }, { key: 'authToken', label: 'Auth Token', placeholder: 'Your auth token' }]
+    },
+    // Productivity
+    {
+        id: 'google', name: 'Google Workspace', icon: '🔵', category: 'productivity', desc: 'Sync contacts, calendar events, and Google Drive attachments with Pipeline3D.', connected: false,
+        fields: [{ key: 'clientId', label: 'OAuth Client ID', placeholder: 'your-client-id.apps.googleusercontent.com' }]
     },
     {
-        id: 'make', name: 'Make (Integromat)', icon: '🔄', desc: 'Automate workflows with Make scenarios', connected: false,
-        fields: [{ key: 'webhookUrl', label: 'Make Webhook URL', placeholder: 'https://hook.us1.make.com/...' }]
+        id: 'calendly', name: 'Calendly', icon: '📅', category: 'productivity', desc: 'Auto-create deals and activities when meetings are scheduled via Calendly.', connected: false,
+        fields: [{ key: 'apiKey', label: 'API Key', placeholder: 'Your Calendly API key' }]
     },
     {
-        id: 'quickbooks', name: 'QuickBooks', icon: '📗', desc: 'Sync won deals to QuickBooks invoices', connected: false,
+        id: 'notion', name: 'Notion', icon: '📝', category: 'productivity', desc: 'Sync deals and contacts to Notion databases. Build custom dashboards.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Integration Token', placeholder: 'secret_...' }]
+    },
+    {
+        id: 'asana', name: 'Asana', icon: '✅', category: 'productivity', desc: 'Create Asana tasks from Pipeline3D activities. Sync project timelines.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Personal Access Token', placeholder: '0/...' }]
+    },
+    {
+        id: 'trello', name: 'Trello', icon: '📋', category: 'productivity', desc: 'Mirror pipeline stages to Trello boards. Create cards from deals.', connected: false,
+        fields: [{ key: 'apiKey', label: 'API Key', placeholder: 'Your Trello API key' }]
+    },
+    {
+        id: 'docusign', name: 'DocuSign', icon: '✍️', category: 'productivity', desc: 'Send proposals for e-signature. Auto-mark deals as Won when signed.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Integration Key', placeholder: 'Your DocuSign integration key' }]
+    },
+    // Finance
+    {
+        id: 'quickbooks', name: 'QuickBooks', icon: '📗', category: 'finance', desc: 'Sync won deals to QuickBooks invoices. Auto-create customers from contacts.', connected: false,
         fields: [{ key: 'apiKey', label: 'API Key', placeholder: 'Your QuickBooks API key' }]
     },
     {
-        id: 'google', name: 'Google Workspace', icon: '🔵', desc: 'Sync contacts & calendar with Google', connected: false,
-        fields: [{ key: 'clientId', label: 'OAuth Client ID', placeholder: 'your-client-id.apps.googleusercontent.com' }]
+        id: 'xero', name: 'Xero', icon: '💙', category: 'finance', desc: 'Push closed-won deals to Xero as invoices. Sync payment status back to CRM.', connected: false,
+        fields: [{ key: 'clientId', label: 'OAuth Client ID', placeholder: 'Your Xero client ID' }]
+    },
+    {
+        id: 'stripe', name: 'Stripe', icon: '💳', category: 'finance', desc: 'Track payments against deals. Auto-update deal status on successful charges.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Secret Key', placeholder: 'sk_live_...' }]
+    },
+    // Marketing
+    {
+        id: 'mailchimp', name: 'Mailchimp', icon: '🐵', category: 'marketing', desc: 'Sync contacts to Mailchimp audiences. Trigger campaigns from pipeline events.', connected: false,
+        fields: [{ key: 'apiKey', label: 'API Key', placeholder: 'your-api-key-us1' }]
+    },
+    {
+        id: 'sendgrid', name: 'SendGrid', icon: '📤', category: 'marketing', desc: 'Send transactional and marketing emails through SendGrid infrastructure.', connected: false,
+        fields: [{ key: 'apiKey', label: 'API Key', placeholder: 'SG.your-key...' }]
+    },
+    {
+        id: 'hubspot', name: 'HubSpot (Import)', icon: '🔶', category: 'marketing', desc: 'One-click import contacts and deals from HubSpot. Migrate to Pipeline3D in minutes.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Private App Token', placeholder: 'pat-na1-...' }]
+    },
+    {
+        id: 'salesforce', name: 'Salesforce (Import)', icon: '☁️', category: 'marketing', desc: 'Import leads, contacts, and opportunities from Salesforce. Migrate your pipeline.', connected: false,
+        fields: [{ key: 'apiKey', label: 'Security Token', placeholder: 'Your Salesforce token' }]
+    },
+    // Dev / Custom
+    {
+        id: 'zapier', name: 'Zapier', icon: '⚡', category: 'dev', desc: 'Connect to 6,000+ apps via Zapier webhooks. Zero-code automation bridge.', connected: false,
+        fields: [{ key: 'webhookUrl', label: 'Zapier Webhook URL', placeholder: 'https://hooks.zapier.com/hooks/catch/...' }]
+    },
+    {
+        id: 'make', name: 'Make (Integromat)', icon: '🔄', category: 'dev', desc: 'Build visual automation scenarios. Advanced data routing and transformation.', connected: false,
+        fields: [{ key: 'webhookUrl', label: 'Make Webhook URL', placeholder: 'https://hook.us1.make.com/...' }]
+    },
+    {
+        id: 'n8n', name: 'n8n', icon: '🔗', category: 'dev', desc: 'Self-hosted workflow automation. Full control over data flow and logic.', connected: false,
+        fields: [{ key: 'webhookUrl', label: 'n8n Webhook URL', placeholder: 'https://your-n8n.example.com/webhook/...' }]
+    },
+    {
+        id: 'github', name: 'GitHub', icon: '🐙', category: 'dev', desc: 'Link deals to GitHub repos. Track development progress on technical sales.', connected: false,
+        fields: [{ key: 'token', label: 'Personal Access Token', placeholder: 'ghp_...' }]
     },
 ];
 
@@ -88,27 +165,38 @@ export default function Integrations({ toast }) {
             {tab === 'integrations' && (
                 <>
                     <div className="section-header">
-                        <h3>{connectedCount} connected</h3>
+                        <h3>{connectedCount} of {integrations.length} connected</h3>
                     </div>
-                    <div className="integration-grid">
-                        {integrations.map(int => (
-                            <div className={`integration-card ${int.connected ? 'connected' : ''}`} key={int.id}>
-                                <div className="integration-card-icon">{int.icon}</div>
-                                <div className="integration-card-info">
-                                    <div className="integration-card-name">{int.name}</div>
-                                    <div className="integration-card-desc">{int.desc}</div>
+                    {CATEGORIES.map(cat => {
+                        const catIntegrations = integrations.filter(i => i.category === cat.id);
+                        if (catIntegrations.length === 0) return null;
+                        return (
+                            <div key={cat.id} style={{ marginBottom: 20 }}>
+                                <h4 style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                                    {cat.icon} {cat.name} ({catIntegrations.length})
+                                </h4>
+                                <div className="integration-grid">
+                                    {catIntegrations.map(int => (
+                                        <div className={`integration-card ${int.connected ? 'connected' : ''}`} key={int.id}>
+                                            <div className="integration-card-icon">{int.icon}</div>
+                                            <div className="integration-card-info">
+                                                <div className="integration-card-name">{int.name}</div>
+                                                <div className="integration-card-desc">{int.desc}</div>
+                                            </div>
+                                            {int.connected ? (
+                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                    <span className="tag tag-green">Connected</span>
+                                                    <button className="btn btn-ghost btn-sm" onClick={() => handleDisconnect(int.id)}>Disconnect</button>
+                                                </div>
+                                            ) : (
+                                                <button className="btn btn-primary btn-sm" onClick={() => { setConfiguring(int.id); setConfigValues({}); }}>Connect</button>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
-                                {int.connected ? (
-                                    <div style={{ display: 'flex', gap: 6 }}>
-                                        <span className="tag tag-green">Connected</span>
-                                        <button className="btn btn-ghost btn-sm" onClick={() => handleDisconnect(int.id)}>Disconnect</button>
-                                    </div>
-                                ) : (
-                                    <button className="btn btn-primary btn-sm" onClick={() => { setConfiguring(int.id); setConfigValues({}); }}>Connect</button>
-                                )}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </>
             )}
 
