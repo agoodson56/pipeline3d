@@ -86,6 +86,17 @@ const GUIDE_SECTIONS = [
         ]
     },
     {
+        title: '⚡ Automations — Multi-Step Workflows',
+        content: [
+            { heading: 'How Automations Work', text: 'Automations run automatically when a trigger event happens. Each automation can have multiple steps — conditions (IF checks) and actions (THEN do this).\n\nExample: When a deal is created → IF value > $25,000 → set label to Hot → create follow-up call → notify Slack' },
+            { heading: 'Creating an Automation', text: '1. Go to Automations in the sidebar\n2. Click + New Automation\n3. Name your rule\n4. Choose a Trigger (WHEN this happens)\n5. Add Steps: Actions (do this) and/or Conditions (only if)\n6. Click Create Automation\n\nYou can add as many steps as you need. Conditions filter when the actions run.' },
+            { heading: 'Triggers (25 Available)', text: 'Deal Triggers:\n• New deal created, Deal moves to stage, Deal won, Deal lost\n• Deal value changed, Probability changed, Label changed\n• Deal inactive for X days, Note added, Close date passed\n• Product added, Deal moved backward, Owner reassigned\n\nContact/Company:\n• Contact created, Contact updated, Contact tagged, Company created\n\nActivity:\n• Activity due today, Activity completed, Activity overdue\n\nCommunication:\n• Email opened, Email link clicked, Email replied, Form submitted' },
+            { heading: 'Conditions (18 Available)', text: '• Deal label is (hot/warm/cold)\n• Deal is in stage (Lead In, Contact Made, etc.)\n• Deal value > or < amount, or between X-Y\n• Probability > or < X%\n• Days open > or < X days\n• Expected close within X days\n• Has contact, Has company, Has notes, Has products\n• Contact has email, Contact has phone\n• Custom field equals value\n• Deal age in range' },
+            { heading: 'Actions (21 Available)', text: '• Create follow-up activity, Create task\n• Send email template, Send SMS, Send push notification\n• Move deal to stage, Update label, Set probability\n• Update custom field, Add note, Add/remove tag\n• Assign deal owner, Duplicate deal (renewal), Create new deal\n• Notify Slack, Notify Teams\n• Fire webhook, Trigger Zapier workflow\n• Wait/delay (days or hours)' },
+            { heading: 'Pre-Built Rules', text: '12 ready-to-use automations included:\n• Follow-up on new deals\n• Site survey scheduled (creates prep task + Teams notification)\n• Won deal celebration (Slack + thank you email)\n• Hot deal fast-track (auto-labels high-value deals)\n• Proposal follow-up sequence (email → wait 3 days → call if cold)\n• Stale deal alert & re-engage (14 days inactive)\n• Lost deal feedback loop\n• New lead form auto-setup\n• Overdue activity escalation\n• Close date passed warning\n• Low probability deal review\n• Deal moved backward alert\n\nToggle any rule on/off with the switch. Click to expand and see the full workflow.' },
+        ]
+    },
+    {
         title: '🧠 AI Coach — Gemini-Powered Sales Intelligence',
         content: [
             { heading: 'Overview', text: 'AI Coach is your personal sales strategist powered by Google Gemini. It has 4 tabs, each with different AI capabilities.' },
