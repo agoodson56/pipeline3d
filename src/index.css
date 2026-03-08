@@ -4,20 +4,20 @@
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Core palette — 3D TSI Light Brand */
+  /* Core palette — White + Gold Borders + Teal Highlights */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8FAFB;
+  --bg-secondary: #FAFBFC;
   --bg-elevated: #FFFFFF;
-  --bg-surface: #F1F5F9;
-  --bg-hover: #E8F0F2;
+  --bg-surface: #F5F7FA;
+  --bg-hover: #F0F4F3;
 
   /* Accent spectrum — Teal Green + Gold */
   --accent: #0D9488;
   --accent-hover: #0F766E;
   --accent-muted: rgba(13, 148, 136, 0.10);
-  --gold: #F59E0B;
-  --gold-hover: #D97706;
-  --gold-muted: rgba(245, 158, 11, 0.12);
+  --gold: #D4A017;
+  --gold-hover: #B8860B;
+  --gold-muted: rgba(212, 160, 23, 0.10);
   --green: #059669;
   --green-muted: rgba(5, 150, 105, 0.10);
   --amber: #D97706;
@@ -31,21 +31,21 @@
   --cyan: #0891B2;
 
   /* Typography — Black text */
-  --text-primary: #1A1A2E;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
+  --text-primary: #111111;
+  --text-secondary: #333333;
+  --text-muted: #888888;
   --text-accent: #0D9488;
 
-  /* Borders & Shadows */
-  --border: #E2E8F0;
-  --border-hover: #CBD5E1;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 30px rgba(13, 148, 136, 0.12);
+  /* Borders & Shadows — Gold accent borders */
+  --border: rgba(212, 160, 23, 0.25);
+  --border-hover: rgba(212, 160, 23, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.10);
+  --shadow-glow: 0 0 30px rgba(13, 148, 136, 0.10);
 
   /* Layout */
-  --sidebar-width: 240px;
+  --sidebar-width: 250px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -114,12 +114,12 @@ body {
   width: 100%;
 }
 
-/* Sidebar */
+/* Sidebar — White with gold border + teal highlights */
 .sidebar {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
-  background: linear-gradient(180deg, #0F766E 0%, #0D9488 100%);
-  border-right: 1px solid var(--border);
+  background: #FFFFFF;
+  border-right: 2px solid var(--gold);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -129,15 +129,18 @@ body {
 }
 
 .sidebar-brand {
-  padding: 0;
+  padding: 12px;
   border-bottom: 1px solid var(--border);
   overflow: hidden;
+  background: #FFFFFF;
 }
 
 .sidebar-logo {
   width: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
 }
 
 .sidebar-brand h1 {
@@ -157,9 +160,9 @@ body {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   padding: 16px 20px 6px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .nav-item {
@@ -167,7 +170,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 10px 20px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
@@ -177,14 +180,15 @@ body {
 }
 
 .nav-item:hover {
-  color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .nav-item.active {
-  color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.12);
-  border-left-color: #F59E0B;
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-left-color: var(--accent);
+  font-weight: 600;
 }
 
 .nav-item .nav-icon {
@@ -196,8 +200,8 @@ body {
 
 .nav-item .nav-badge {
   margin-left: auto;
-  background: rgba(245, 158, 11, 0.25);
-  color: #FBBF24;
+  background: var(--accent-muted);
+  color: var(--accent);
   padding: 1px 8px;
   border-radius: 10px;
   font-size: 11px;
@@ -222,10 +226,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 28px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--gold);
+  background: #FFFFFF;
   min-height: 64px;
 }
 
@@ -394,13 +396,13 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--gold));
-  opacity: 0;
+  background: var(--gold);
+  opacity: 1;
   transition: opacity var(--transition-normal);
 }
 
 .kpi-card:hover {
-  border-color: var(--border-hover);
+  border-color: var(--gold);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
@@ -2741,14 +2743,14 @@ kbd {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.15s ease;
   position: relative;
 }
 
 .sidebar-user:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-hover);
 }
 
 .sidebar-user-avatar {
@@ -2762,7 +2764,7 @@ kbd {
   font-weight: 700;
   font-size: 13px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-user-info {
@@ -2773,7 +2775,7 @@ kbd {
 .sidebar-user-name {
   font-size: 13px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2781,11 +2783,11 @@ kbd {
 
 .sidebar-user-role {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 .sidebar-user-dots {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 2px;
