@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
+import * as api from '../api.js';
 
 const UserManagement = lazy(() => import('./UserManagement.jsx'));
 
@@ -18,6 +19,14 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
     const [customFields, setCustomFields] = useState(DEFAULT_FIELDS);
     const [showAddField, setShowAddField] = useState(false);
     const [newField, setNewField] = useState({ name: '', type: 'text', entity: 'deals', options: '' });
+
+    // 2FA state
+    const [twoFASetup, setTwoFASetup] = useState(null); // { secret, otpauthUri }
+    const [twoFACode, setTwoFACode] = useState('');
+    const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+    const [twoFALoading, setTwoFALoading] = useState(false);
+    const [twoFAError, setTwoFAError] = useState('');
+    const [disablePw, setDisablePw] = useState('');
 
     const addField = () => {
         if (!newField.name.trim()) return;
@@ -51,6 +60,7 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
                 )}
                 <button className={`detail-tab ${tab === 'fields' ? 'active' : ''}`} onClick={() => setTab('fields')}>🛠 Custom Fields</button>
                 <button className={`detail-tab ${tab === 'pipelines' ? 'active' : ''}`} onClick={() => setTab('pipelines')}>🔀 Pipelines</button>
+                <button className={`detail-tab ${tab === 'security' ? 'active' : ''}`} onClick={() => setTab('security')}>🔐 Security</button>
                 <button className={`detail-tab ${tab === 'general' ? 'active' : ''}`} onClick={() => setTab('general')}>⚙️ General</button>
             </div>
 
@@ -168,6 +178,137 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
                         <div className="form-group"><label className="form-label">Name</label><input className="form-input" defaultValue={currentUser?.name} disabled /></div>
                         <div className="form-group"><label className="form-label">Email</label><input className="form-input" defaultValue={currentUser?.email} disabled /></div>
                         <div className="form-group"><label className="form-label">Role</label><input className="form-input" defaultValue={currentUser?.role === 'admin' ? 'Administrator' : 'Sales Representative'} disabled /></div>
+                    </div>
+                </div>
+            )}
+
+            {tab === 'security' && (
+                <div className="dashboard-grid">
+                    <div className="chart-card">
+                        <div className="chart-card-title">🔐 Two-Factor Authentication (2FA)</div>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                            Add an extra layer of security by requiring a 6-digit code from your authenticator app (Google Authenticator, Authy, etc.) each time you sign in.
+                        </p>
+
+                        {twoFAError && (
+                            <div style={{ background: '#fef2f2', color: '#dc2626', padding: '8px 12px', borderRadius: 8, fontSize: 13, marginBottom: 12 }}>
+                                ⚠️ {twoFAError}
+                            </div>
+                        )}
+
+                        {!twoFASetup && !twoFAEnabled && (
+                            <button className="btn btn-primary" disabled={twoFALoading} onClick={async () => {
+                                setTwoFALoading(true); setTwoFAError('');
+                                try {
+                                    const data = await api.setup2FA();
+                                    setTwoFASetup(data);
+                                } catch (e) { setTwoFAError(e.message); }
+                                setTwoFALoading(false);
+                            }}>
+                                {twoFALoading ? '⏳ Setting up...' : '🔐 Enable 2FA'}
+                            </button>
+                        )}
+
+                        {twoFASetup && !twoFAEnabled && (
+                            <div>
+                                <div style={{ background: 'var(--bg-surface)', padding: 16, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 16 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Step 1: Add this key to your authenticator app</div>
+                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+                                        <code style={{ flex: 1, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 8, fontSize: 15, fontFamily: 'monospace', letterSpacing: 2, wordBreak: 'break-all' }}>
+                                            {twoFASetup.secret}
+                                        </code>
+                                        <button className="btn btn-ghost" onClick={() => { navigator.clipboard.writeText(twoFASetup.secret); toast('Key copied!'); }}>
+                                            📋 Copy
+                                        </button>
+                                    </div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Open Google Authenticator → Tap + → Enter a setup key → Paste the key above</div>
+                                </div>
+                                <div style={{ marginBottom: 16 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Step 2: Enter the 6-digit code from your app</div>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <input className="form-input" value={twoFACode} onChange={e => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            placeholder="000000" maxLength={6} inputMode="numeric"
+                                            style={{ flex: 1, textAlign: 'center', fontSize: 24, letterSpacing: 8, fontFamily: 'monospace' }} />
+                                        <button className="btn btn-primary" disabled={twoFACode.length !== 6 || twoFALoading} onClick={async () => {
+                                            setTwoFALoading(true); setTwoFAError('');
+                                            try {
+                                                await api.confirm2FA(twoFACode);
+                                                setTwoFAEnabled(true);
+                                                setTwoFASetup(null);
+                                                setTwoFACode('');
+                                                toast('✅ 2FA enabled successfully!');
+                                            } catch (e) { setTwoFAError(e.message); }
+                                            setTwoFALoading(false);
+                                        }}>
+                                            {twoFALoading ? '⏳' : '✓ Verify'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <button className="btn btn-ghost" onClick={() => { setTwoFASetup(null); setTwoFACode(''); setTwoFAError(''); }}>Cancel</button>
+                            </div>
+                        )}
+
+                        {twoFAEnabled && (
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', background: '#065f46', borderRadius: 10, marginBottom: 16 }}>
+                                    <span style={{ fontSize: 24 }}>✅</span>
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: 14, color: '#d1fae5' }}>2FA is enabled</div>
+                                        <div style={{ fontSize: 12, color: '#a7f3d0' }}>Your account is protected with two-factor authentication</div>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Disable 2FA</div>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <input type="password" className="form-input" placeholder="Enter your password" value={disablePw}
+                                        onChange={e => setDisablePw(e.target.value)} style={{ flex: 1 }} />
+                                    <button className="btn btn-ghost" style={{ color: '#ef4444' }} disabled={!disablePw || twoFALoading} onClick={async () => {
+                                        setTwoFALoading(true); setTwoFAError('');
+                                        try {
+                                            await api.disable2FA(disablePw);
+                                            setTwoFAEnabled(false);
+                                            setDisablePw('');
+                                            toast('2FA disabled');
+                                        } catch (e) { setTwoFAError(e.message); }
+                                        setTwoFALoading(false);
+                                    }}>
+                                        Disable 2FA
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="chart-card">
+                        <div className="chart-card-title">🔔 Push Notifications</div>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                            Receive browser notifications for deal updates, overdue activities, and new leads.
+                        </p>
+                        <button className="btn btn-primary" onClick={async () => {
+                            if ('Notification' in window) {
+                                const perm = await Notification.requestPermission();
+                                if (perm === 'granted') {
+                                    new Notification('Pipeline3D', { body: 'Notifications enabled!', icon: '/logo.png' });
+                                    toast('✅ Notifications enabled!');
+                                } else {
+                                    toast('Notifications blocked — check browser settings', 'error');
+                                }
+                            } else {
+                                toast('Notifications not supported in this browser', 'error');
+                            }
+                        }}>
+                            {typeof Notification !== 'undefined' && Notification.permission === 'granted' ? '✅ Notifications Active' : '🔔 Enable Notifications'}
+                        </button>
+                    </div>
+
+                    <div className="chart-card">
+                        <div className="chart-card-title">📡 Offline Mode</div>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                            Pipeline3D automatically caches your data for offline access. When you lose internet, you can still view your deals, contacts, and activities in read-only mode. Changes sync automatically when you reconnect.
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: navigator.onLine ? '#10b981' : '#ef4444' }} />
+                            <span style={{ fontSize: 13 }}>{navigator.onLine ? 'Online — data syncing normally' : 'Offline — viewing cached data'}</span>
+                        </div>
                     </div>
                 </div>
             )}

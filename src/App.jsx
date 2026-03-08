@@ -129,13 +129,26 @@ function App() {
 
   // ═══ AUTH: Login handler ═══
   const handleLogin = async (email, password) => {
-    const { user } = await api.login(email, password);
-    setCurrentUser(user);
-    if (user.mustChangePw) setShowForceChangePw(true);
+    const result = await api.login(email, password);
+    // If 2FA is required, return the challenge to LoginScreen
+    if (result.requires2FA) return result;
+    setCurrentUser(result.user);
+    if (result.user.mustChangePw) setShowForceChangePw(true);
     loadAllData();
     if (!localStorage.getItem('p3d_toured')) {
       setShowOnboarding(true);
     }
+    // Request push notification permission
+    requestNotificationPermission();
+  };
+
+  // ═══ AUTH: 2FA verification handler ═══
+  const handleVerify2FA = async (challengeToken, code) => {
+    const result = await api.verify2FALogin(challengeToken, code);
+    setCurrentUser(result.user);
+    if (result.user.mustChangePw) setShowForceChangePw(true);
+    loadAllData();
+    requestNotificationPermission();
   };
 
   // ═══ AUTH: Logout handler ═══
@@ -170,6 +183,17 @@ function App() {
       loadAllData();
     }
   }, [currentUser, loadAllData]);
+
+  // ═══ PUSH NOTIFICATIONS ═══
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        // Show a welcome notification
+        new Notification('Pipeline3D', { body: 'Notifications enabled! You\'ll be alerted on deal updates.', icon: '/logo.png' });
+      }
+    }
+  };
 
   // Ctrl+K keyboard shortcut
   useEffect(() => {
@@ -214,7 +238,7 @@ function App() {
   if (!currentUser) {
     return (
       <Suspense fallback={<div className="loading-screen"><div className="spinner" /></div>}>
-        <LoginScreen onLogin={handleLogin} />
+        <LoginScreen onLogin={handleLogin} onVerify2FA={handleVerify2FA} />
       </Suspense>
     );
   }

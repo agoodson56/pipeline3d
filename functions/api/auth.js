@@ -66,6 +66,53 @@ function generateUserId() {
 const AVATAR_COLORS = ['#0D9488', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1'];
 
 // ═══════════════════════════════════════════════════════════════
+// TOTP (2FA) — RFC 6238 compliant
+// ═══════════════════════════════════════════════════════════════
+const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+function base32Encode(buffer) {
+    let bits = '';
+    for (const byte of buffer) bits += byte.toString(2).padStart(8, '0');
+    let result = '';
+    for (let i = 0; i < bits.length; i += 5) {
+        result += BASE32_CHARS[parseInt(bits.substr(i, 5).padEnd(5, '0'), 2)];
+    }
+    return result;
+}
+
+function base32Decode(str) {
+    let bits = '';
+    for (const c of str.toUpperCase()) {
+        const v = BASE32_CHARS.indexOf(c);
+        if (v >= 0) bits += v.toString(2).padStart(5, '0');
+    }
+    const bytes = [];
+    for (let i = 0; i + 8 <= bits.length; i += 8) bytes.push(parseInt(bits.substr(i, 8), 2));
+    return new Uint8Array(bytes);
+}
+
+function generateTOTPSecret() {
+    return base32Encode(crypto.getRandomValues(new Uint8Array(20)));
+}
+
+async function verifyTOTP(secret, code, windowSize = 1) {
+    const secretBytes = base32Decode(secret);
+    const time = Math.floor(Date.now() / 30000);
+    for (let i = -windowSize; i <= windowSize; i++) {
+        const counter = time + i;
+        const counterBytes = new Uint8Array(8);
+        let tmp = counter;
+        for (let j = 7; j >= 0; j--) { counterBytes[j] = tmp & 0xff; tmp = Math.floor(tmp / 256); }
+        const key = await crypto.subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+        const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, counterBytes));
+        const offset = sig[sig.length - 1] & 0x0f;
+        const binary = ((sig[offset] & 0x7f) << 24) | (sig[offset + 1] << 16) | (sig[offset + 2] << 8) | sig[offset + 3];
+        if ((binary % 1000000).toString().padStart(6, '0') === code) return true;
+    }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // RATE LIMITING
 // ═══════════════════════════════════════════════════════════════
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -139,6 +186,14 @@ export async function onRequestPost({ request, env }) {
                 return handleDeactivate(body, env, request);
             case 'change-password':
                 return handleChangePassword(body, env, request);
+            case 'setup-2fa':
+                return handleSetup2FA(body, env, request);
+            case 'confirm-2fa':
+                return handleConfirm2FA(body, env, request);
+            case 'disable-2fa':
+                return handleDisable2FA(body, env, request);
+            case 'verify-2fa':
+                return handleVerify2FALogin(body, env, request);
             default:
                 return json({ error: 'Unknown action' }, 400, request);
         }
@@ -217,6 +272,24 @@ async function handleLogin({ email, password }, env, request) {
     await cleanExpiredSessions(env);
 
     await audit(env, request, 'login_success', user.id, normalizedEmail, null);
+
+    // Check if 2FA is enabled
+    let totpEnabled = false;
+    try {
+        const tfaRow = await env.DB.prepare('SELECT totp_enabled FROM users WHERE id = ?').bind(user.id).first();
+        totpEnabled = !!tfaRow?.totp_enabled;
+    } catch { /* column doesn't exist yet */ }
+
+    if (totpEnabled) {
+        // Create a temporary 2FA challenge (5 min expiry)
+        const challengeId = generateToken();
+        try {
+            await env.DB.prepare(
+                "INSERT INTO two_factor_challenges (id, user_id, expires_at) VALUES (?, ?, datetime('now', '+5 minutes'))"
+            ).bind(challengeId, user.id).run();
+        } catch { /* table doesn't exist */ }
+        return json({ requires2FA: true, challengeToken: challengeId }, 200, request);
+    }
 
     return json({
         success: true,
@@ -386,6 +459,103 @@ async function handleChangePassword({ token, currentPassword, newPassword, userI
         targetId === sessionUser.id ? 'Changed own password' : `Admin reset password for ${targetId}`);
 
     return json({ success: true }, 200, request);
+}
+
+// ─── 2FA: SETUP (generate secret) ───────────────────────────
+async function handleSetup2FA({ token }, env, request) {
+    const user = await getSessionUser(token, env);
+    if (!user) return json({ error: 'Not authenticated' }, 401, request);
+
+    const secret = generateTOTPSecret();
+    try {
+        await env.DB.prepare("UPDATE users SET totp_secret = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(secret, user.id).run();
+    } catch { return json({ error: '2FA not available — migration required' }, 500, request); }
+
+    const otpauthUri = `otpauth://totp/Pipeline3D:${encodeURIComponent(user.email)}?secret=${secret}&issuer=Pipeline3D&digits=6&period=30`;
+    return json({ secret, otpauthUri }, 200, request);
+}
+
+// ─── 2FA: CONFIRM (verify code and enable) ──────────────────
+async function handleConfirm2FA({ token, code }, env, request) {
+    const user = await getSessionUser(token, env);
+    if (!user) return json({ error: 'Not authenticated' }, 401, request);
+    if (!code || code.length !== 6) return json({ error: 'Enter a 6-digit code' }, 400, request);
+
+    let secret;
+    try {
+        const row = await env.DB.prepare('SELECT totp_secret FROM users WHERE id = ?').bind(user.id).first();
+        secret = row?.totp_secret;
+    } catch { return json({ error: '2FA not available' }, 500, request); }
+    if (!secret) return json({ error: 'Run setup first' }, 400, request);
+
+    const valid = await verifyTOTP(secret, code);
+    if (!valid) return json({ error: 'Invalid code. Check your authenticator app and try again.' }, 400, request);
+
+    await env.DB.prepare("UPDATE users SET totp_enabled = 1, updated_at = datetime('now') WHERE id = ?").bind(user.id).run();
+    await audit(env, request, '2fa_enabled', user.id, user.email, null);
+    return json({ success: true }, 200, request);
+}
+
+// ─── 2FA: DISABLE ───────────────────────────────────────────
+async function handleDisable2FA({ token, password }, env, request) {
+    const user = await getSessionUser(token, env);
+    if (!user) return json({ error: 'Not authenticated' }, 401, request);
+
+    // Require password to disable 2FA
+    if (!password) return json({ error: 'Password required to disable 2FA' }, 400, request);
+    const userRecord = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(user.id).first();
+    const valid = await verifyPassword(password, userRecord.password_hash);
+    if (!valid) return json({ error: 'Incorrect password' }, 400, request);
+
+    try {
+        await env.DB.prepare("UPDATE users SET totp_enabled = 0, totp_secret = NULL, updated_at = datetime('now') WHERE id = ?").bind(user.id).run();
+    } catch { /* column doesn't exist */ }
+    await audit(env, request, '2fa_disabled', user.id, user.email, null);
+    return json({ success: true }, 200, request);
+}
+
+// ─── 2FA: VERIFY LOGIN (complete 2FA challenge) ─────────────
+async function handleVerify2FALogin({ challengeToken, code }, env, request) {
+    if (!challengeToken || !code) return json({ error: 'Challenge token and code required' }, 400, request);
+
+    let challenge;
+    try {
+        challenge = await env.DB.prepare(
+            "SELECT * FROM two_factor_challenges WHERE id = ? AND expires_at > datetime('now')"
+        ).bind(challengeToken).first();
+    } catch { return json({ error: '2FA not available' }, 500, request); }
+
+    if (!challenge) return json({ error: 'Challenge expired. Please login again.' }, 401, request);
+
+    // Get user's TOTP secret
+    const user = await env.DB.prepare(
+        'SELECT id, email, name, role, status, avatar_color, totp_secret, must_change_pw FROM users WHERE id = ?'
+    ).bind(challenge.user_id).first();
+
+    if (!user || !user.totp_secret) return json({ error: 'Invalid challenge' }, 400, request);
+
+    const valid = await verifyTOTP(user.totp_secret, code);
+    if (!valid) return json({ error: 'Invalid 2FA code' }, 401, request);
+
+    // Delete challenge
+    await env.DB.prepare('DELETE FROM two_factor_challenges WHERE id = ?').bind(challengeToken).run();
+
+    // Create full session
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    await env.DB.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').bind(token, user.id, expiresAt).run();
+
+    await audit(env, request, '2fa_verified', user.id, user.email, null);
+
+    return json({
+        success: true,
+        token,
+        user: {
+            id: user.id, email: user.email, name: user.name, role: user.role,
+            avatarColor: user.avatar_color, mustChangePw: !!(user.must_change_pw),
+        },
+    }, 200, request);
 }
 
 // ─── HELPER: Get user from session token ────────────────────

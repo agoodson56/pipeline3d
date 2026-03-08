@@ -43,13 +43,23 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
     const handleAIDraft = async () => {
         if (!aiPrompt.trim()) return;
         setAiDrafting(true);
-        // Simulate AI drafting (would connect to Gemini API in production)
-        await new Promise(r => setTimeout(r, 1500));
-        const deal = deals.find(d => d.title === draftDeal) || {};
-        setDraftSubject(`Re: ${draftDeal || 'Follow-up'}`);
-        setDraftBody(`Hi ${draftContact || 'there'},\n\n${aiPrompt.includes('follow') ? 'I wanted to follow up on our recent conversation.' : 'Thank you for your time.'}\n\n${aiPrompt.includes('proposal') ? `I\'ve prepared a proposal for ${draftDeal || 'the project'} at ${deal.value ? '$' + deal.value.toLocaleString() : 'a competitive rate'}.` : 'I believe 3D Technology Services Inc. can add significant value to your team.'}\n\nWould you be available for a brief call to discuss next steps?\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com`);
+        try {
+            const deal = deals.find(d => d.title === draftDeal) || {};
+            const contact = contacts.find(c => c.name === draftContact) || {};
+            const result = await api.aiDraftEmail(aiPrompt, {
+                contact: draftContact || contact.name,
+                company: deal.company || contact.company,
+                deal: draftDeal || deal.title,
+                value: deal.value ? `$${deal.value.toLocaleString()}` : undefined,
+                stage: deal.stage,
+            });
+            setDraftSubject(result.subject || `Re: ${draftDeal || 'Follow-up'}`);
+            setDraftBody(result.body || '');
+            toast('✨ AI draft generated!');
+        } catch (err) {
+            toast('AI drafting failed: ' + err.message, 'error');
+        }
         setAiDrafting(false);
-        toast('AI draft generated!');
     };
 
     const handleSend = async () => {

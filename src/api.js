@@ -196,3 +196,89 @@ export const deleteEmail = (id) => request('/emails', { method: 'DELETE', body: 
 // ─── Settings ──────────────────────────────────────────────
 export const getSettings = () => request('/settings');
 export const saveSettings = (obj) => request('/settings', { method: 'POST', body: JSON.stringify(obj) });
+
+// ─── 2FA ───────────────────────────────────────────────────
+export async function setup2FA() {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'setup-2fa', token }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to setup 2FA');
+    return data;
+}
+
+export async function confirm2FA(code) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm-2fa', token, code }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to confirm 2FA');
+    return data;
+}
+
+export async function disable2FA(password) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disable-2fa', token, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to disable 2FA');
+    return data;
+}
+
+export async function verify2FALogin(challengeToken, code) {
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify-2fa', challengeToken, code }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Invalid 2FA code');
+    setToken(data.token);
+    localStorage.setItem('p3d_user', JSON.stringify(data.user));
+    return data;
+}
+
+// ─── AI Email (Gemini) ─────────────────────────────────────
+const GEMINI_KEY = 'AIzaSyAlM3SYPTt7iqRCZTjb7axvg_S5se4Q2_8';
+
+export async function aiDraftEmail(prompt, context = {}) {
+    const systemPrompt = `You are a professional sales email writer for 3D Technology Services Inc. (3DTSI), a low-voltage systems integrator specializing in Structured Cabling, CCTV, DAS, Access Control, Audio Visual, Intrusion, Fire Alarm, and Security Systems.
+
+Write a professional, concise sales email based on the user's request. Use a warm but professional tone. Always sign off as "3D Technology Services Inc." with the website "https://3dtsi.com".
+
+Context:
+- Contact: ${context.contact || 'N/A'}
+- Company: ${context.company || 'N/A'}
+- Deal: ${context.deal || 'N/A'}
+- Deal Value: ${context.value || 'N/A'}
+- Deal Stage: ${context.stage || 'N/A'}
+
+Return ONLY a JSON object with "subject" and "body" keys. No markdown, no code fences.`;
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: systemPrompt + '\n\nUser request: ' + prompt }] }],
+                generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+            }),
+        });
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        // Parse JSON from response (handle potential markdown fences)
+        const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        return JSON.parse(clean);
+    } catch (e) {
+        throw new Error('AI drafting failed: ' + e.message);
+    }
+}
