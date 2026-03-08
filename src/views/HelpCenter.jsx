@@ -20,7 +20,7 @@ const GUIDE_SECTIONS = [
     {
         title: '🔀 Pipeline — Managing Your Deals',
         content: [
-            { heading: 'Pipeline Stages', text: 'Default stages:\n• Lead In — new opportunity, not yet contacted\n• Contacted — initial conversation done\n• Proposal — quote or proposal sent\n• Negotiation — discussing terms\n• Won 🎉 — deal closed!' },
+            { heading: 'Pipeline Stages', text: 'Default stages:\n• Lead In — new opportunity, not yet contacted\n• Contact Made — initial conversation done, qualifying the project\n• Site Survey — on-site visit to assess scope, measurements & existing infrastructure\n• Proposal — scope of work and quote sent to the customer\n• Negotiation — discussing terms, pricing & project timeline\n• Won 🎉 — deal closed, project awarded!' },
             { heading: 'Adding a New Deal', text: '1. Click the green + Add Deal button\n2. Fill in: Title, Value ($), Stage, Contact, Company, Probability (%), Label (Hot/Warm/Cold), Expected Close\n3. Click Create Deal\n\nYour deal card appears on the Kanban board!' },
             { heading: 'Moving Deals (Drag & Drop)', text: '• Click and hold a deal card\n• Drag it to the new stage column\n• Release to drop it\n\nOr click a deal → Details tab → use the stage buttons under "Move to Stage"' },
             { heading: 'Deal Detail Tabs', text: 'Click any deal card to see:\n• Details — value, stage, contact, probability, days open\n• Products — add line items (name, qty, price) — auto-calculates total\n• Notes — add timestamped notes (press Enter or click Add)\n• History — automatic timeline of all changes' },

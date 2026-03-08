@@ -7,10 +7,10 @@ import { useState, useRef, useEffect } from 'react';
    - Live Chat: real-time visitor conversations
    ═══════════════════════════════════════════════════════════════ */
 
-const INDUSTRIES = ['Technology', 'SaaS', 'Healthcare', 'Finance', 'Manufacturing', 'Real Estate', 'Education', 'Retail', 'Logistics', 'Construction', 'Energy', 'Legal', 'Media', 'Telecom', 'Government'];
-const JOB_TITLES = ['CEO', 'CTO', 'VP Sales', 'VP Engineering', 'Director IT', 'CFO', 'COO', 'Head of Marketing', 'Procurement Manager', 'IT Manager', 'Operations Director', 'Business Development Manager', 'Facilities Manager', 'Security Director', 'Project Manager'];
+const INDUSTRIES = ['Construction', 'Commercial Real Estate', 'Healthcare', 'K-12 Education', 'Higher Education', 'Government', 'Manufacturing', 'Warehousing & Logistics', 'Financial Services', 'Hospitality', 'Retail', 'Technology', 'Property Management', 'Data Centers', 'Energy & Utilities'];
+const JOB_TITLES = ['Facilities Manager', 'Security Director', 'IT Director', 'General Contractor', 'Project Manager', 'VP Operations', 'Director of Construction', 'Chief Technology Officer', 'Procurement Manager', 'Building Engineer', 'Property Manager', 'Campus Safety Director', 'IT Manager', 'Operations Director', 'Electrical Contractor'];
 const COMPANY_SIZES = ['1-10', '11-50', '51-200', '201-1000', '1001-5000', '5000+'];
-const REGIONS = ['United States', 'Canada', 'United Kingdom', 'Germany', 'Australia', 'France', 'India', 'Japan', 'Brazil', 'Mexico'];
+const REGIONS = ['Sacramento / NorCal', 'Bay Area', 'Southern California', 'Houston / Texas', 'Austin / Central TX', 'Dallas / DFW', 'Phoenix / Arizona', 'Las Vegas / Nevada', 'Portland / Oregon', 'Denver / Colorado'];
 
 const FIRST_NAMES = ['Sarah', 'James', 'Olivia', 'Liam', 'Emma', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Marcus', 'Isabella', 'Lucas', 'Mia', 'Alexander', 'Charlotte', 'Daniel', 'Amelia', 'Michael', 'Harper', 'David', 'Evelyn', 'Joseph', 'Abigail', 'Chris', 'Emily', 'Ryan', 'Elizabeth', 'Kevin', 'Sofia', 'Brian'];
 const LAST_NAMES = ['Chen', 'Patel', 'Williams', 'Torres', 'Kim', 'Johnson', 'Martinez', 'Anderson', 'Garcia', 'Lee', 'Brown', 'Wilson', 'Taylor', 'Thomas', 'Moore', 'Miller', 'Davis', 'Rodriguez', 'White', 'Harris', 'Clark', 'Lewis', 'Hall', 'Young', 'Walker', 'Allen', 'King', 'Wright', 'Scott', 'Green'];

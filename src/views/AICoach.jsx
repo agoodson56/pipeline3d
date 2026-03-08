@@ -17,7 +17,7 @@ function scoreDeal(deal) {
     else { score -= 8; reasons.push({ text: 'Low probability (<40%)', impact: '-' }); }
 
     // Stage progression
-    const stageRank = { 'Lead In': 1, 'Contact Made': 2, 'Needs Analysis': 3, 'Proposal': 4, 'Negotiation': 5, 'Won': 6 };
+    const stageRank = { 'Lead In': 1, 'Contact Made': 2, 'Site Survey': 3, 'Proposal': 4, 'Negotiation': 5, 'Won': 6 };
     const rank = stageRank[deal.stage] || 1;
     if (rank >= 4) { score += 10; reasons.push({ text: 'Advanced stage (Proposal+)', impact: '+' }); }
     else if (rank <= 1) { score -= 5; reasons.push({ text: 'Early stage — needs progression', impact: '-' }); }
@@ -52,9 +52,9 @@ function generateRecommendations(deal, scoreData) {
     if (!deal.notes?.length) recs.push({ icon: '📝', text: 'Add deal notes to track conversation history', priority: 'medium' });
     if (deal.value > 30000 && deal.probability < 50) recs.push({ icon: '🤝', text: 'High-value deal needs executive sponsor involvement', priority: 'high' });
     if (scoreData.grade === 'A') recs.push({ icon: '🎯', text: 'Strong deal — push for close this week', priority: 'low' });
-    const stageRank = { 'Lead In': 1, 'Contact Made': 2, 'Needs Analysis': 3, 'Proposal': 4, 'Negotiation': 5 };
-    if ((stageRank[deal.stage] || 0) === 3) recs.push({ icon: '📄', text: 'Needs analysis complete? Prepare & send proposal', priority: 'medium' });
-    if ((stageRank[deal.stage] || 0) >= 4) recs.push({ icon: '💰', text: 'Late stage — discuss pricing and timeline for close', priority: 'medium' });
+    const stageRank = { 'Lead In': 1, 'Contact Made': 2, 'Site Survey': 3, 'Proposal': 4, 'Negotiation': 5 };
+    if ((stageRank[deal.stage] || 0) === 3) recs.push({ icon: '📋', text: 'Site survey complete? Prepare scope of work & send proposal', priority: 'medium' });
+    if ((stageRank[deal.stage] || 0) >= 4) recs.push({ icon: '💰', text: 'Late stage — discuss pricing, labor estimates & project timeline', priority: 'medium' });
     return recs.slice(0, 5);
 }
 

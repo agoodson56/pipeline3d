@@ -3,12 +3,14 @@ import { useState, lazy, Suspense } from 'react';
 const UserManagement = lazy(() => import('./UserManagement.jsx'));
 
 const DEFAULT_FIELDS = [
-    { id: 1, name: 'Project Type', type: 'dropdown', entity: 'deals', options: ['New Install', 'Upgrade', 'Maintenance', 'Consultation'], active: true },
-    { id: 2, name: 'Lead Source', type: 'dropdown', entity: 'deals', options: ['Website', 'Referral', 'Cold Call', 'Trade Show', 'LinkedIn', 'Other'], active: true },
-    { id: 3, name: 'Decision Timeline', type: 'dropdown', entity: 'deals', options: ['Immediate', '1-3 months', '3-6 months', '6+ months'], active: true },
-    { id: 4, name: 'Contract Length', type: 'text', entity: 'deals', options: [], active: true },
-    { id: 5, name: 'Territory', type: 'dropdown', entity: 'contacts', options: ['Northeast', 'Southeast', 'Midwest', 'West', 'International'], active: true },
-    { id: 6, name: 'LinkedIn URL', type: 'text', entity: 'contacts', options: [], active: false },
+    { id: 1, name: 'Service Line', type: 'dropdown', entity: 'deals', options: ['Security Systems', 'Structured Cabling', 'Audio & Video Systems', 'Networking', 'Fire & Life Safety', 'Service & Maintenance'], active: true },
+    { id: 2, name: 'Project Type', type: 'dropdown', entity: 'deals', options: ['New Install', 'Upgrade / Retrofit', 'Service & Repair', 'Design-Build', 'Consultation / Assessment', 'Maintenance Agreement'], active: true },
+    { id: 3, name: 'Lead Source', type: 'dropdown', entity: 'deals', options: ['Website (3dtsi.com)', 'Referral', 'GC / Contractor Referral', 'Architect / Engineer Spec', 'RFP / Bid Invite', 'Existing Customer', 'Cold Call', 'Trade Show', 'LinkedIn', 'Other'], active: true },
+    { id: 4, name: 'Decision Timeline', type: 'dropdown', entity: 'deals', options: ['Immediate', '1-3 months', '3-6 months', '6+ months'], active: true },
+    { id: 5, name: 'Contract Length', type: 'text', entity: 'deals', options: [], active: true },
+    { id: 6, name: 'Bid Due Date', type: 'date', entity: 'deals', options: [], active: true },
+    { id: 7, name: 'Territory', type: 'dropdown', entity: 'contacts', options: ['Sacramento / NorCal', 'Bay Area', 'Southern California', 'Houston / Texas', 'Other US', 'International'], active: true },
+    { id: 8, name: 'LinkedIn URL', type: 'text', entity: 'contacts', options: [], active: false },
 ];
 
 export default function Settings({ toast, pipelines, refreshPipelines, currentUser, isAdmin }) {
@@ -151,7 +153,7 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
                     <div className="chart-card">
                         <div className="chart-card-title">Company Information</div>
                         <div className="form-group"><label className="form-label">Company Name</label><input className="form-input" defaultValue="3D Technology Services Inc." /></div>
-                        <div className="form-group"><label className="form-label">Industry</label><input className="form-input" defaultValue="Low Voltage / Technology" /></div>
+                        <div className="form-group"><label className="form-label">Industry</label><input className="form-input" defaultValue="Systems Integration / Low Voltage" /></div>
                         <div className="form-group"><label className="form-label">Default Currency</label><select className="form-select" defaultValue="USD"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
                         <div className="form-group"><label className="form-label">Fiscal Year Start</label><select className="form-select" defaultValue="January"><option>January</option><option>April</option><option>July</option><option>October</option></select></div>
                     </div>

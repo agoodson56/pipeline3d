@@ -43,7 +43,14 @@ const SAMPLE_RULES = [
     {
         id: 1, name: 'Follow-up on new deals', trigger: 'deal_created', active: true,
         steps: [
-            { type: 'action', actionId: 'create_activity', config: { title: 'Follow up call', activityType: 'call' } },
+            { type: 'action', actionId: 'create_activity', config: { title: 'Initial qualification call', activityType: 'call' } },
+        ]
+    },
+    {
+        id: 8, name: 'Site Survey scheduled', trigger: 'deal_stage', triggerValue: 'Site Survey', active: true,
+        steps: [
+            { type: 'action', actionId: 'create_activity', config: { title: 'Conduct site survey — measure & document', activityType: 'meeting' } },
+            { type: 'action', actionId: 'notify_teams', config: { message: '📐 Site survey scheduled — prep drawings & tools' } },
         ]
     },
     {
@@ -255,7 +262,7 @@ export default function Automations({ toast }) {
                                 <div className="form-group">
                                     <label className="form-label">Trigger Value (optional)</label>
                                     <input className="form-input" value={newRule.triggerValue} onChange={e => setNewRule(r => ({ ...r, triggerValue: e.target.value }))}
-                                        placeholder={newRule.trigger === 'deal_stage' ? 'e.g. Proposal' : newRule.trigger === 'deal_value' ? '50000' : 'Value'} />
+                                        placeholder={newRule.trigger === 'deal_stage' ? 'e.g. Site Survey' : newRule.trigger === 'deal_value' ? '50000' : 'Value'} />
                                 </div>
                             )}
 

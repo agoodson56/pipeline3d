@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { fmt } from '../utils.js';
 
-const STAGES_ORDER = ['Lead In', 'Contact Made', 'Needs Analysis', 'Proposal', 'Negotiation', 'Won'];
+const STAGES_ORDER = ['Lead In', 'Contact Made', 'Site Survey', 'Proposal', 'Negotiation', 'Won'];
 
 export default function Reports({ deals, contacts, companies, activities, pipelines }) {
     const [tab, setTab] = useState('overview');
