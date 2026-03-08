@@ -4,7 +4,7 @@
     "description": "Modern CRM for managing sales pipelines, deals, contacts, and activities",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#0a0d0e",
+    "background_color": "#FFFFFF",
     "theme_color": "#0D9488",
     "orientation": "any",
     "categories": [

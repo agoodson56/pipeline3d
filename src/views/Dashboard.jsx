@@ -69,7 +69,7 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
                 </div>
                 <div className="kpi-card">
                     <div className="kpi-label">Weighted Forecast</div>
-                    <div className="kpi-value" style={{ color: '#5EEAD4' }}>{fmt(stats.weighted)}</div>
+                    <div className="kpi-value" style={{ color: '#0D9488' }}>{fmt(stats.weighted)}</div>
                     <div className="kpi-sub">Probability-adjusted</div>
                 </div>
                 <div className="kpi-card">
@@ -116,7 +116,7 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
             <div className="chart-card" style={{ marginTop: 16, padding: '12px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>🎯 Monthly Quota Progress</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: stats.quotaPct >= 100 ? '#10b981' : '#5EEAD4' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: stats.quotaPct >= 100 ? '#10b981' : '#0D9488' }}>
                         {fmt(stats.wonValue)} / {fmt(stats.quota)} ({stats.quotaPct}%)
                     </span>
                 </div>

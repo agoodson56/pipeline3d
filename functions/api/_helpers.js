@@ -71,3 +71,18 @@ export function validateRequired(obj, fields) {
   }
   return null;
 }
+
+/**
+ * Get the authenticated user from context.data (set by middleware).
+ * Returns { id, email, name, role, avatarColor }
+ */
+export function getUser(context) {
+  return context.data?.user || null;
+}
+
+/**
+ * Check if the authenticated user is an admin.
+ */
+export function isAdmin(context) {
+  return context.data?.user?.role === 'admin';
+}

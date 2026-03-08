@@ -1,20 +1,160 @@
 /* ═══════════════════════════════════════════════════════════════
-   Pipeline3D — API Client
+   Pipeline3D — API Client (with Auth)
    Talks to Cloudflare Pages Functions → D1
    ═══════════════════════════════════════════════════════════════ */
 
 const BASE = '/api';
 
+/** Get stored auth token */
+function getToken() {
+    return localStorage.getItem('p3d_auth_token') || '';
+}
+
+/** Set auth token */
+export function setToken(token) {
+    if (token) {
+        localStorage.setItem('p3d_auth_token', token);
+    } else {
+        localStorage.removeItem('p3d_auth_token');
+    }
+}
+
+/** Core request function — automatically includes auth token */
 async function request(path, opts = {}) {
+    const token = getToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+
     const res = await fetch(`${BASE}${path}`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         ...opts,
     });
+
+    // If 401, clear token and redirect to login
+    if (res.status === 401) {
+        setToken(null);
+        localStorage.removeItem('p3d_user');
+        window.dispatchEvent(new Event('p3d-logout'));
+        throw new Error('Session expired. Please log in again.');
+    }
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({ error: res.statusText }));
         throw new Error(err.error || 'Request failed');
     }
     return res.json();
+}
+
+// ─── Auth ───────────────────────────────────────────────────
+export async function login(email, password) {
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+    setToken(data.token);
+    localStorage.setItem('p3d_user', JSON.stringify(data.user));
+    return data;
+}
+
+export async function logout() {
+    const token = getToken();
+    try {
+        await fetch(`${BASE}/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logout', token }),
+        });
+    } catch { /* ignore logout errors */ }
+    setToken(null);
+    localStorage.removeItem('p3d_user');
+}
+
+export async function verifySession() {
+    const token = getToken();
+    if (!token) return null;
+    try {
+        const res = await fetch(`${BASE}/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'me', token }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            setToken(null);
+            localStorage.removeItem('p3d_user');
+            return null;
+        }
+        localStorage.setItem('p3d_user', JSON.stringify(data.user));
+        return data.user;
+    } catch {
+        return null;
+    }
+}
+
+// ─── User Management (admin only) ──────────────────────────
+export async function listUsers() {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list', token }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to list users');
+    return data;
+}
+
+export async function registerUser(email, name, password, role) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'register', token, email, name, password, role }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to register user');
+    return data;
+}
+
+export async function updateUser(userId, updates) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', token, userId, ...updates }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to update user');
+    return data;
+}
+
+export async function deactivateUser(userId, reactivate = false) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deactivate', token, userId, reactivate }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    return data;
+}
+
+export async function changePassword(currentPassword, newPassword, userId = null) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'change-password', token, currentPassword, newPassword, userId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to change password');
+    return data;
 }
 
 // ─── Pipelines ─────────────────────────────────────────────

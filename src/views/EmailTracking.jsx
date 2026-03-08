@@ -62,7 +62,7 @@ export default function EmailTracking({ emails, toast }) {
                                     <div style={{ display: 'flex', gap: 6 }}>
                                         {e.opened && <span className="tag tag-green">Opened</span>}
                                         {e.clicked && <span className="tag tag-blue">Clicked</span>}
-                                        {!e.opened && !e.clicked && <span className="tag" style={{ background: '#1c1f2e', color: '#64748b' }}>Sent</span>}
+                                        {!e.opened && !e.clicked && <span className="tag" style={{ background: 'var(--bg-surface)', color: '#64748b' }}>Sent</span>}
                                     </div>
                                 </td>
                             </tr>

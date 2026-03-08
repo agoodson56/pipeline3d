@@ -1,7 +1,8 @@
 import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
 export { opts as onRequestOptions };
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+    const { request, env } = context;
     try {
         const { results } = await env.DB.prepare('SELECT * FROM settings').all();
         const settings = {};
@@ -10,7 +11,8 @@ export async function onRequestGet({ request, env }) {
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+    const { request, env } = context;
     try {
         const body = await request.json();
         if (!body || typeof body !== 'object') return json({ error: 'Expected an object' }, 400, request);

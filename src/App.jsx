@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import * as api from './api.js';
 
-// Lazy-load all views — only Dashboard loads eagerly for fastest initial paint
+// Lazy-load all views
+const LoginScreen = lazy(() => import('./views/LoginScreen.jsx'));
 const Dashboard = lazy(() => import('./views/Dashboard.jsx'));
 const Pipeline = lazy(() => import('./views/Pipeline.jsx'));
 const Contacts = lazy(() => import('./views/Contacts.jsx'));
@@ -48,16 +49,21 @@ const NAV = [
 const MOBILE_NAV = ['dashboard', 'pipeline', 'contacts', 'activities', 'ai'];
 
 function App() {
+  // ═══ AUTH STATE ═══
+  const [authChecking, setAuthChecking] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   const [view, setView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [cmdQuery, setCmdQuery] = useState('');
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showIOSInstall, setShowIOSInstall] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('p3d_toured'));
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
@@ -92,28 +98,80 @@ function App() {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
   }, []);
 
+  // ═══ AUTH: Check session on mount ═══
   useEffect(() => {
-    async function load() {
-      try {
-        const [p, d, c, co, a, e] = await Promise.all([
-          api.getPipelines(), api.getDeals(), api.getContacts(),
-          api.getCompanies(), api.getActivities(), api.getEmails(),
-        ]);
-        setPipelines(p); setDeals(d); setContacts(c);
-        setCompanies(co); setActivities(a); setEmails(e);
-      } catch (err) {
-        toast('Failed to load data: ' + err.message, 'error');
+    async function checkAuth() {
+      const user = await api.verifySession();
+      if (user) {
+        setCurrentUser(user);
+        // Check if first visit
+        if (!localStorage.getItem('p3d_toured')) {
+          setShowOnboarding(true);
+        }
       }
-      setLoading(false);
+      setAuthChecking(false);
     }
-    load();
+    checkAuth();
+
+    // Listen for forced logout (401 responses)
+    const logoutHandler = () => {
+      setCurrentUser(null);
+      setPipelines([]); setDeals([]); setContacts([]);
+      setCompanies([]); setActivities([]); setEmails([]);
+    };
+    window.addEventListener('p3d-logout', logoutHandler);
+    return () => window.removeEventListener('p3d-logout', logoutHandler);
+  }, []);
+
+  // ═══ AUTH: Login handler ═══
+  const handleLogin = async (email, password) => {
+    const { user } = await api.login(email, password);
+    setCurrentUser(user);
+    // Load data after login
+    loadAllData();
+    if (!localStorage.getItem('p3d_toured')) {
+      setShowOnboarding(true);
+    }
+  };
+
+  // ═══ AUTH: Logout handler ═══
+  const handleLogout = async () => {
+    await api.logout();
+    setCurrentUser(null);
+    setShowUserMenu(false);
+    setPipelines([]); setDeals([]); setContacts([]);
+    setCompanies([]); setActivities([]); setEmails([]);
+    setView('dashboard');
+  };
+
+  // ═══ DATA: Load all data ═══
+  const loadAllData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [p, d, c, co, a, e] = await Promise.all([
+        api.getPipelines(), api.getDeals(), api.getContacts(),
+        api.getCompanies(), api.getActivities(), api.getEmails(),
+      ]);
+      setPipelines(p); setDeals(d); setContacts(c);
+      setCompanies(co); setActivities(a); setEmails(e);
+    } catch (err) {
+      toast('Failed to load data: ' + err.message, 'error');
+    }
+    setLoading(false);
   }, [toast]);
+
+  // Load data once authenticated
+  useEffect(() => {
+    if (currentUser) {
+      loadAllData();
+    }
+  }, [currentUser, loadAllData]);
 
   // Ctrl+K keyboard shortcut
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(o => !o); setCmdQuery(''); }
-      if (e.key === 'Escape') setCmdOpen(false);
+      if (e.key === 'Escape') { setCmdOpen(false); setShowUserMenu(false); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -143,11 +201,31 @@ function App() {
   const refreshEmails = async () => { try { setEmails(await api.getEmails()); } catch { } };
   const refreshPipelines = async () => { try { setPipelines(await api.getPipelines()); } catch { } };
 
-  if (loading) return <div className="loading-screen"><div className="spinner" /></div>;
+  // ═══ AUTH CHECK: Show loading screen while checking session ═══
+  if (authChecking) {
+    return <div className="loading-screen"><div className="spinner" /></div>;
+  }
+
+  // ═══ AUTH GATE: Show login if not authenticated ═══
+  if (!currentUser) {
+    return (
+      <Suspense fallback={<div className="loading-screen"><div className="spinner" /></div>}>
+        <LoginScreen onLogin={handleLogin} />
+      </Suspense>
+    );
+  }
+
+  // ═══ AUTHENTICATED: Main app ═══
+  if (loading && deals.length === 0) return <div className="loading-screen"><div className="spinner" /></div>;
+
+  const isAdmin = currentUser.role === 'admin';
+
+  const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   const viewProps = {
     deals, contacts, companies, activities, emails, pipelines, toast,
-    refreshDeals, refreshContacts, refreshCompanies, refreshActivities, refreshEmails, refreshPipelines
+    refreshDeals, refreshContacts, refreshCompanies, refreshActivities, refreshEmails, refreshPipelines,
+    currentUser, isAdmin,
   };
 
   const renderView = () => {
@@ -218,6 +296,41 @@ function App() {
             </div>
           )}
         </nav>
+
+        {/* User Profile Section at bottom of sidebar */}
+        <div className="sidebar-user" onClick={() => setShowUserMenu(u => !u)}>
+          <div className="sidebar-user-avatar" style={{ background: currentUser.avatarColor || '#0D9488' }}>
+            {getInitials(currentUser.name)}
+          </div>
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{currentUser.name}</div>
+            <div className="sidebar-user-role">{isAdmin ? '👑 Admin' : '💼 Sales Rep'}</div>
+          </div>
+          <span className="sidebar-user-dots">⋯</span>
+        </div>
+
+        {/* User Dropdown Menu */}
+        {showUserMenu && (
+          <div className="user-menu">
+            <div className="user-menu-header">
+              <div className="sidebar-user-avatar" style={{ background: currentUser.avatarColor || '#0D9488', width: 32, height: 32, fontSize: 12 }}>
+                {getInitials(currentUser.name)}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{currentUser.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{currentUser.email}</div>
+              </div>
+            </div>
+            <div className="user-menu-divider" />
+            <div className="user-menu-item" onClick={() => { navigate('settings'); setShowUserMenu(false); }}>
+              ⚙️ Settings
+            </div>
+            <div className="user-menu-divider" />
+            <div className="user-menu-item user-menu-item-danger" onClick={handleLogout}>
+              🚪 Sign Out
+            </div>
+          </div>
+        )}
       </aside>
 
       <main className="main-content">
@@ -336,6 +449,9 @@ function App() {
           </div>
         ))}
       </div>
+
+      {/* Click outside user menu to close */}
+      {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowUserMenu(false)} />}
     </div>
   );
 }

@@ -1,14 +1,17 @@
 import { json, errorResponse, onRequestOptions as opts, validateRequired, validateString } from './_helpers.js';
 export { opts as onRequestOptions };
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+    const { request, env } = context;
     try {
+        // Companies are shared across the team (Pipedrive best practice — prevents duplicates)
         const { results } = await env.DB.prepare('SELECT * FROM companies ORDER BY name').all();
         return json(results, 200, request);
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+    const { request, env } = context;
     try {
         const c = await request.json();
         const reqErr = validateRequired(c, ['name']);
@@ -25,7 +28,8 @@ export async function onRequestPost({ request, env }) {
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestDelete({ request, env }) {
+export async function onRequestDelete(context) {
+    const { request, env } = context;
     try {
         const { id } = await request.json();
         if (id === undefined || id === null) return json({ error: 'id is required' }, 400, request);

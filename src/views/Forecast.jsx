@@ -32,7 +32,7 @@ export default function Forecast({ deals }) {
                 </div>
                 <div className="kpi-card">
                     <div className="kpi-label">Total Pipeline</div>
-                    <div className="kpi-value" style={{ color: '#5EEAD4' }}>{fmt(totalPipeline)}</div>
+                    <div className="kpi-value" style={{ color: '#0D9488' }}>{fmt(totalPipeline)}</div>
                     <div className="kpi-sub">{deals.length} deals</div>
                 </div>
                 <div className="kpi-card">

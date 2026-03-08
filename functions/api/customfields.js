@@ -1,14 +1,16 @@
 import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
 export { opts as onRequestOptions };
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+    const { request, env } = context;
     try {
         const { results } = await env.DB.prepare('SELECT * FROM custom_field_defs ORDER BY created_at').all();
         return json(results, 200, request);
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestPut({ request, env }) {
+export async function onRequestPut(context) {
+    const { request, env } = context;
     try {
         const items = await request.json();
         if (!Array.isArray(items)) return json({ error: 'Expected an array' }, 400, request);

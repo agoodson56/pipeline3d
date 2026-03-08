@@ -125,7 +125,7 @@ export default function Reports({ deals, contacts, companies, activities, pipeli
                         <div className="kpi-card"><div className="kpi-label">Win Rate</div><div className="kpi-value" style={{ color: stats.winRate >= 30 ? '#10b981' : '#ef4444' }}>{stats.winRate}%</div><div className="kpi-sub">{stats.won.length} won / {stats.closed} closed</div></div>
                         <div className="kpi-card"><div className="kpi-label">Avg Deal Size</div><div className="kpi-value">{fmt(stats.avgDeal)}</div><div className="kpi-sub">{stats.open.length} open deals</div></div>
                         <div className="kpi-card"><div className="kpi-label">Avg Days Open</div><div className="kpi-value">{stats.avgDaysOpen}</div><div className="kpi-sub">Sales cycle length</div></div>
-                        <div className="kpi-card"><div className="kpi-label">Pipeline Velocity</div><div className="kpi-value" style={{ color: '#5EEAD4' }}>{fmt(stats.pipelineVelocity)}</div><div className="kpi-sub">Revenue per day potential</div></div>
+                        <div className="kpi-card"><div className="kpi-label">Pipeline Velocity</div><div className="kpi-value" style={{ color: '#0D9488' }}>{fmt(stats.pipelineVelocity)}</div><div className="kpi-sub">Revenue per day potential</div></div>
                     </div>
 
                     <div className="dashboard-grid">
@@ -202,7 +202,7 @@ export default function Reports({ deals, contacts, companies, activities, pipeli
                                                 <td>{d.company || '—'}</td>
                                                 <td><span className="tag tag-accent">{d.stage}</span></td>
                                                 <td style={{ color: '#10b981', fontWeight: 700 }}>{fmt(d.value)}</td>
-                                                <td style={{ color: '#5EEAD4' }}>{fmt(d.value * d.probability / 100)}</td>
+                                                <td style={{ color: '#0D9488' }}>{fmt(d.value * d.probability / 100)}</td>
                                             </tr>
                                         ))}
                                         {topDeals.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', padding: 24, color: '#64748b' }}>No deals</td></tr>}
@@ -215,7 +215,7 @@ export default function Reports({ deals, contacts, companies, activities, pipeli
                                 <div className="chart-card-title">Revenue Summary</div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Open Pipeline</span><span style={{ fontWeight: 700 }}>{fmt(stats.totalPipelineValue)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Weighted Pipeline</span><span style={{ fontWeight: 700, color: '#5EEAD4' }}>{fmt(stats.weightedPipeline)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Weighted Pipeline</span><span style={{ fontWeight: 700, color: '#0D9488' }}>{fmt(stats.weightedPipeline)}</span></div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Won Revenue</span><span style={{ fontWeight: 700, color: '#10b981' }}>{fmt(stats.wonRevenue)}</span></div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Lost Revenue</span><span style={{ fontWeight: 700, color: '#ef4444' }}>{fmt(stats.lostRevenue)}</span></div>
                                     <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700 }}>

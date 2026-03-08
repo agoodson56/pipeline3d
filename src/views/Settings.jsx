@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
+
+const UserManagement = lazy(() => import('./UserManagement.jsx'));
 
 const DEFAULT_FIELDS = [
     { id: 1, name: 'Project Type', type: 'dropdown', entity: 'deals', options: ['New Install', 'Upgrade', 'Maintenance', 'Consultation'], active: true },
@@ -9,8 +11,8 @@ const DEFAULT_FIELDS = [
     { id: 6, name: 'LinkedIn URL', type: 'text', entity: 'contacts', options: [], active: false },
 ];
 
-export default function Settings({ toast, pipelines, refreshPipelines }) {
-    const [tab, setTab] = useState('fields');
+export default function Settings({ toast, pipelines, refreshPipelines, currentUser, isAdmin }) {
+    const [tab, setTab] = useState(isAdmin ? 'users' : 'fields');
     const [customFields, setCustomFields] = useState(DEFAULT_FIELDS);
     const [showAddField, setShowAddField] = useState(false);
     const [newField, setNewField] = useState({ name: '', type: 'text', entity: 'deals', options: '' });
@@ -42,10 +44,19 @@ export default function Settings({ toast, pipelines, refreshPipelines }) {
     return (
         <div>
             <div className="detail-tabs" style={{ marginBottom: 20 }}>
+                {isAdmin && (
+                    <button className={`detail-tab ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>👥 Users</button>
+                )}
                 <button className={`detail-tab ${tab === 'fields' ? 'active' : ''}`} onClick={() => setTab('fields')}>🛠 Custom Fields</button>
                 <button className={`detail-tab ${tab === 'pipelines' ? 'active' : ''}`} onClick={() => setTab('pipelines')}>🔀 Pipelines</button>
                 <button className={`detail-tab ${tab === 'general' ? 'active' : ''}`} onClick={() => setTab('general')}>⚙️ General</button>
             </div>
+
+            {tab === 'users' && isAdmin && (
+                <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" /></div>}>
+                    <UserManagement toast={toast} currentUser={currentUser} />
+                </Suspense>
+            )}
 
             {tab === 'fields' && (
                 <div>
@@ -149,6 +160,12 @@ export default function Settings({ toast, pipelines, refreshPipelines }) {
                         <div className="form-group"><label className="form-label">Default Win Probability</label><input className="form-input" type="number" defaultValue="20" /></div>
                         <div className="form-group"><label className="form-label">Deal Rotting (days)</label><input className="form-input" type="number" defaultValue="30" /></div>
                         <div className="form-group"><label className="form-label">Monthly Quota ($)</label><input className="form-input" type="number" defaultValue="100000" /></div>
+                    </div>
+                    <div className="chart-card">
+                        <div className="chart-card-title">Your Account</div>
+                        <div className="form-group"><label className="form-label">Name</label><input className="form-input" defaultValue={currentUser?.name} disabled /></div>
+                        <div className="form-group"><label className="form-label">Email</label><input className="form-input" defaultValue={currentUser?.email} disabled /></div>
+                        <div className="form-group"><label className="form-label">Role</label><input className="form-input" defaultValue={currentUser?.role === 'admin' ? 'Administrator' : 'Sales Representative'} disabled /></div>
                     </div>
                 </div>
             )}

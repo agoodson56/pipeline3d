@@ -1,7 +1,8 @@
 import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
 export { opts as onRequestOptions };
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+    const { request, env } = context;
     try {
         const { results } = await env.DB.prepare('SELECT * FROM pipelines ORDER BY created_at').all();
         const data = results.map(r => ({ ...r, stages: JSON.parse(r.stages || '[]') }));
@@ -9,7 +10,8 @@ export async function onRequestGet({ request, env }) {
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+    const { request, env } = context;
     try {
         const body = await request.json();
         if (!body.name) return json({ error: 'name is required' }, 400, request);
@@ -20,7 +22,8 @@ export async function onRequestPost({ request, env }) {
     } catch (e) { return errorResponse(e, request); }
 }
 
-export async function onRequestPut({ request, env }) {
+export async function onRequestPut(context) {
+    const { request, env } = context;
     try {
         const items = await request.json();
         if (!Array.isArray(items)) return json({ error: 'Expected an array' }, 400, request);

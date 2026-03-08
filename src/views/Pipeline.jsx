@@ -210,7 +210,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                     </div>
                                 ))}
                                 {stageDeals.length === 0 && (
-                                    <div style={{ textAlign: 'center', padding: 24, color: '#64748b', fontSize: 12, border: '2px dashed rgba(255,255,255,0.06)', borderRadius: 8, margin: 4 }}>
+                                    <div style={{ textAlign: 'center', padding: 24, color: '#64748b', fontSize: 12, border: '2px dashed var(--border)', borderRadius: 8, margin: 4 }}>
                                         Drop deals here
                                     </div>
                                 )}
