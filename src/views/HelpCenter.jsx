@@ -140,7 +140,6 @@ function UserGuide() {
     const toggle = (i) => setOpenSections(s => ({ ...s, [i]: !s[i] }));
 
     const printGuide = () => {
-        const w = window.open('', '_blank');
         let html = `<html><head><title>Pipeline3D User Guide</title><style>
             body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.7; }
             h1 { font-size: 28px; border-bottom: 3px solid #D4A017; padding-bottom: 8px; }
@@ -149,7 +148,7 @@ function UserGuide() {
             p, li { font-size: 13px; }
             .section { page-break-inside: avoid; margin-bottom: 24px; }
             @media print { body { margin: 20px; } }
-        </style></head><body><h1>📖 Pipeline3D — Sales Team User Guide</h1><p style="color:#666">3D Technology Services · March 2026</p>`;
+        </style></head><body><h1>\ud83d\udcd6 Pipeline3D \u2014 Sales Team User Guide</h1><p style="color:#666">3D Technology Services \u00b7 March 2026</p>`;
         GUIDE_SECTIONS.forEach(sec => {
             html += `<div class="section"><h2>${sec.title}</h2>`;
             sec.content.forEach(item => {
@@ -159,9 +158,10 @@ function UserGuide() {
             html += `</div>`;
         });
         html += `</body></html>`;
-        w.document.write(html);
-        w.document.close();
-        setTimeout(() => w.print(), 500);
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const w = window.open(url, '_blank');
+        if (w) setTimeout(() => { w.print(); URL.revokeObjectURL(url); }, 600);
     };
 
     return (

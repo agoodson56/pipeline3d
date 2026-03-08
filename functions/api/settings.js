@@ -1,4 +1,4 @@
-import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
+import { json, errorResponse, onRequestOptions as opts, isAdmin } from './_helpers.js';
 export { opts as onRequestOptions };
 
 export async function onRequestGet(context) {
@@ -13,6 +13,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
     const { request, env } = context;
+    if (!isAdmin(context)) return json({ error: 'Admin access required' }, 403, request);
     try {
         const body = await request.json();
         if (!body || typeof body !== 'object') return json({ error: 'Expected an object' }, 400, request);

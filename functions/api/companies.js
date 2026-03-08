@@ -1,4 +1,4 @@
-import { json, errorResponse, onRequestOptions as opts, validateRequired, validateString } from './_helpers.js';
+import { json, errorResponse, onRequestOptions as opts, validateRequired, validateString, isAdmin } from './_helpers.js';
 export { opts as onRequestOptions };
 
 export async function onRequestGet(context) {
@@ -30,6 +30,7 @@ export async function onRequestPost(context) {
 
 export async function onRequestDelete(context) {
     const { request, env } = context;
+    if (!isAdmin(context)) return json({ error: 'Admin access required to delete companies' }, 403, request);
     try {
         const { id } = await request.json();
         if (id === undefined || id === null) return json({ error: 'id is required' }, 400, request);

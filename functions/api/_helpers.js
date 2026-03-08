@@ -25,6 +25,7 @@ export function corsHeaders(request) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key',
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
+    'X-Content-Type-Options': 'nosniff',
   };
 }
 

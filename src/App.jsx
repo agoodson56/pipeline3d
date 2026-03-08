@@ -64,6 +64,10 @@ function App() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [showIOSInstall, setShowIOSInstall] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showForceChangePw, setShowForceChangePw] = useState(false);
+  const [changePwForm, setChangePwForm] = useState({ current: '', newPw: '', confirm: '' });
+  const [changePwError, setChangePwError] = useState('');
+  const [changePwLoading, setChangePwLoading] = useState(false);
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
@@ -104,7 +108,7 @@ function App() {
       const user = await api.verifySession();
       if (user) {
         setCurrentUser(user);
-        // Check if first visit
+        if (user.mustChangePw) setShowForceChangePw(true);
         if (!localStorage.getItem('p3d_toured')) {
           setShowOnboarding(true);
         }
@@ -127,7 +131,7 @@ function App() {
   const handleLogin = async (email, password) => {
     const { user } = await api.login(email, password);
     setCurrentUser(user);
-    // Load data after login
+    if (user.mustChangePw) setShowForceChangePw(true);
     loadAllData();
     if (!localStorage.getItem('p3d_toured')) {
       setShowOnboarding(true);
@@ -217,6 +221,24 @@ function App() {
 
   // ═══ AUTHENTICATED: Main app ═══
   if (loading && deals.length === 0) return <div className="loading-screen"><div className="spinner" /></div>;
+
+  const handleForceChangePw = async (e) => {
+    e.preventDefault();
+    setChangePwError('');
+    if (changePwForm.newPw.length < 8) { setChangePwError('Password must be at least 8 characters'); return; }
+    if (changePwForm.newPw !== changePwForm.confirm) { setChangePwError('Passwords do not match'); return; }
+    setChangePwLoading(true);
+    try {
+      await api.changePassword(changePwForm.current, changePwForm.newPw);
+      setShowForceChangePw(false);
+      setCurrentUser(u => ({ ...u, mustChangePw: false }));
+      setChangePwForm({ current: '', newPw: '', confirm: '' });
+      toast('Password changed successfully!');
+    } catch (err) {
+      setChangePwError(err.message || 'Failed to change password');
+    }
+    setChangePwLoading(false);
+  };
 
   const isAdmin = currentUser.role === 'admin';
 
@@ -452,6 +474,49 @@ function App() {
 
       {/* Click outside user menu to close */}
       {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowUserMenu(false)} />}
+
+      {/* Force Password Change Modal */}
+      {showForceChangePw && (
+        <div className="modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="modal" style={{ maxWidth: 400 }}>
+            <div className="modal-header">
+              <h3>🔒 Password Change Required</h3>
+            </div>
+            <form onSubmit={handleForceChangePw}>
+              <div className="modal-body">
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                  For security, you must change your password before continuing.
+                </p>
+                {changePwError && (
+                  <div style={{ background: '#fef2f2', color: '#dc2626', padding: '8px 12px', borderRadius: 8, fontSize: 13, marginBottom: 12 }}>
+                    ⚠️ {changePwError}
+                  </div>
+                )}
+                <div className="form-group">
+                  <label className="form-label">Current Password</label>
+                  <input type="password" className="form-input" value={changePwForm.current}
+                    onChange={e => setChangePwForm(f => ({ ...f, current: e.target.value }))} required autoFocus />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">New Password (min 8 characters)</label>
+                  <input type="password" className="form-input" value={changePwForm.newPw}
+                    onChange={e => setChangePwForm(f => ({ ...f, newPw: e.target.value }))} required minLength={8} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password</label>
+                  <input type="password" className="form-input" value={changePwForm.confirm}
+                    onChange={e => setChangePwForm(f => ({ ...f, confirm: e.target.value }))} required />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="submit" className="btn btn-primary" disabled={changePwLoading}>
+                  {changePwLoading ? 'Updating…' : '🔐 Change Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

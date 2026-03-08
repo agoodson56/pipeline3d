@@ -1,4 +1,4 @@
-import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
+import { json, errorResponse, onRequestOptions as opts, isAdmin } from './_helpers.js';
 export { opts as onRequestOptions };
 
 export async function onRequestGet(context) {
@@ -11,6 +11,7 @@ export async function onRequestGet(context) {
 
 export async function onRequestPut(context) {
     const { request, env } = context;
+    if (!isAdmin(context)) return json({ error: 'Admin access required' }, 403, request);
     try {
         const items = await request.json();
         if (!Array.isArray(items)) return json({ error: 'Expected an array' }, 400, request);
