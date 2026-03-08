@@ -10,7 +10,8 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
     const filtered = contacts.filter(c =>
         c.name?.toLowerCase().includes(search.toLowerCase()) ||
         c.company?.toLowerCase().includes(search.toLowerCase()) ||
-        c.email?.toLowerCase().includes(search.toLowerCase())
+        c.email?.toLowerCase().includes(search.toLowerCase()) ||
+        c.mobile?.toLowerCase().includes(search.toLowerCase())
     );
 
     const handleAdd = async (e) => {
@@ -21,6 +22,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
             name: fd.get('name'),
             email: fd.get('email'),
             phone: fd.get('phone'),
+            mobile: fd.get('mobile'),
             company: fd.get('company'),
             companyId: '',
             role: fd.get('role'),
@@ -53,7 +55,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                         <span className="search-icon">🔍</span>
                         <input placeholder="Search contacts…" value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
-                    <button className="btn btn-ghost" onClick={() => { exportCSV(contacts.map(c => ({ Name: c.name, Email: c.email, Phone: c.phone, Company: c.company, Role: c.role, Tags: (c.tags || []).join(', ') })), 'pipeline3d_contacts.csv'); toast('Exported!'); }}>⬇ CSV</button>
+                    <button className="btn btn-ghost" onClick={() => { exportCSV(contacts.map(c => ({ Name: c.name, Email: c.email, Phone: c.phone, Mobile: c.mobile, Company: c.company, Role: c.role, Tags: (c.tags || []).join(', ') })), 'pipeline3d_contacts.csv'); toast('Exported!'); }}>⬇ CSV</button>
                     <button className="btn btn-primary" onClick={() => setShowAdd(true)}>+ Add Contact</button>
                 </div>
             </div>
@@ -61,7 +63,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
             <div className="data-table-wrap">
                 <table className="data-table">
                     <thead>
-                        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Role</th><th>Tags</th></tr>
+                        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Mobile</th><th>Company</th><th>Role</th><th>Tags</th></tr>
                     </thead>
                     <tbody>
                         {filtered.map(c => (
@@ -69,6 +71,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                                 <td>{c.name}</td>
                                 <td>{c.email || '—'}</td>
                                 <td>{c.phone || '—'}</td>
+                                <td>{c.mobile || '—'}</td>
                                 <td>{c.company || '—'}</td>
                                 <td>{c.role || '—'}</td>
                                 <td>
@@ -77,7 +80,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                             </tr>
                         ))}
                         {filtered.length === 0 && (
-                            <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+                            <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
                                 {search ? 'No matches found' : 'No contacts yet'}
                             </td></tr>
                         )}
@@ -105,23 +108,29 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                                         <input name="email" className="form-input" type="email" placeholder="email@example.com" />
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Phone</label>
+                                        <label className="form-label">Phone (Office)</label>
                                         <input name="phone" className="form-input" placeholder="+1 (555) 000-0000" />
                                     </div>
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
+                                        <label className="form-label">📱 Mobile Phone</label>
+                                        <input name="mobile" className="form-input" placeholder="+1 (555) 000-0000" />
+                                    </div>
+                                    <div className="form-group">
                                         <label className="form-label">Company</label>
                                         <input name="company" className="form-input" placeholder="Company name" />
                                     </div>
+                                </div>
+                                <div className="form-row">
                                     <div className="form-group">
                                         <label className="form-label">Role</label>
                                         <input name="role" className="form-input" placeholder="Job title" />
                                     </div>
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Tags (comma separated)</label>
-                                    <input name="tags" className="form-input" placeholder="decision-maker, technical" />
+                                    <div className="form-group">
+                                        <label className="form-label">Tags (comma separated)</label>
+                                        <input name="tags" className="form-input" placeholder="decision-maker, technical" />
+                                    </div>
                                 </div>
                             </div>
                             <div className="modal-footer">
@@ -144,7 +153,8 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                         <div className="modal-body">
                             <div className="deal-detail-grid">
                                 <div className="deal-detail-item"><div className="label">Email</div><div className="value">{selected.email || '—'}</div></div>
-                                <div className="deal-detail-item"><div className="label">Phone</div><div className="value">{selected.phone || '—'}</div></div>
+                                <div className="deal-detail-item"><div className="label">Phone (Office)</div><div className="value">{selected.phone || '—'}</div></div>
+                                <div className="deal-detail-item"><div className="label">📱 Mobile</div><div className="value">{selected.mobile || '—'}</div></div>
                                 <div className="deal-detail-item"><div className="label">Company</div><div className="value">{selected.company || '—'}</div></div>
                                 <div className="deal-detail-item"><div className="label">Role</div><div className="value">{selected.role || '—'}</div></div>
                             </div>

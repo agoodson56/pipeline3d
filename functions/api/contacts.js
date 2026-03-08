@@ -20,13 +20,13 @@ export async function onRequestPost(context) {
         const c = await request.json();
         const reqErr = validateRequired(c, ['name']);
         if (reqErr) return json({ error: reqErr }, 400, request);
-        const strErr = validateString(c.name, 'name', 255) || validateString(c.email, 'email', 320) || validateString(c.phone, 'phone', 50);
+        const strErr = validateString(c.name, 'name', 255) || validateString(c.email, 'email', 320) || validateString(c.phone, 'phone', 50) || validateString(c.mobile, 'mobile', 50);
         if (strErr) return json({ error: strErr }, 400, request);
 
         await env.DB.prepare(`INSERT OR REPLACE INTO contacts
-      (id, name, email, phone, company_id, company, role, deals, tags, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
-            .bind(c.id, c.name, c.email, c.phone, c.companyId, c.company, c.role,
+      (id, name, email, phone, mobile, company_id, company, role, deals, tags, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
+            .bind(c.id, c.name, c.email, c.phone, c.mobile || null, c.companyId, c.company, c.role,
                 c.deals || 0, JSON.stringify(c.tags || []))
             .run();
         return json({ success: true }, 200, request);
