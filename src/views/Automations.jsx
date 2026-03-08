@@ -1,42 +1,87 @@
 import { useState } from 'react';
 
 const TRIGGER_TYPES = [
-    { id: 'deal_stage', label: 'Deal moves to stage', icon: '📦' },
+    // Deal triggers
     { id: 'deal_created', label: 'New deal created', icon: '✨' },
-    { id: 'deal_value', label: 'Deal value exceeds', icon: '💰' },
-    { id: 'activity_due', label: 'Activity due today', icon: '⏰' },
-    { id: 'deal_inactive', label: 'Deal inactive for X days', icon: '💤' },
+    { id: 'deal_stage', label: 'Deal moves to stage', icon: '📦' },
     { id: 'deal_won', label: 'Deal marked as Won', icon: '🏆' },
     { id: 'deal_lost', label: 'Deal marked as Lost', icon: '❌' },
+    { id: 'deal_value', label: 'Deal value exceeds', icon: '💰' },
+    { id: 'deal_value_changed', label: 'Deal value changed', icon: '💵' },
+    { id: 'deal_probability_changed', label: 'Deal probability changed', icon: '📊' },
+    { id: 'deal_label_changed', label: 'Deal label changed', icon: '🏷️' },
+    { id: 'deal_inactive', label: 'Deal inactive for X days', icon: '💤' },
+    { id: 'deal_note_added', label: 'Note added to deal', icon: '📝' },
+    { id: 'deal_close_date_passed', label: 'Expected close date passed', icon: '⚠️' },
+    { id: 'deal_product_added', label: 'Product added to deal', icon: '📦' },
+    { id: 'deal_stage_backward', label: 'Deal moved backward in pipeline', icon: '⬅️' },
+    { id: 'deal_owner_changed', label: 'Deal owner reassigned', icon: '🔄' },
+    // Contact & Company triggers
     { id: 'contact_created', label: 'New contact created', icon: '👤' },
+    { id: 'contact_updated', label: 'Contact updated', icon: '✏️' },
+    { id: 'contact_tagged', label: 'Contact tagged', icon: '🏷️' },
+    { id: 'company_created', label: 'New company created', icon: '🏢' },
+    // Activity triggers
+    { id: 'activity_due', label: 'Activity due today', icon: '⏰' },
+    { id: 'activity_completed', label: 'Activity completed', icon: '✅' },
+    { id: 'activity_overdue', label: 'Activity is overdue', icon: '🔴' },
+    // Communication triggers
     { id: 'email_opened', label: 'Email opened', icon: '📬' },
-    { id: 'form_submitted', label: 'Lead form submitted', icon: '📝' },
+    { id: 'email_clicked', label: 'Email link clicked', icon: '🔗' },
+    { id: 'email_replied', label: 'Email replied to', icon: '↩️' },
+    { id: 'form_submitted', label: 'Lead form submitted', icon: '📋' },
 ];
 
 const CONDITION_TYPES = [
+    // Deal conditions
     { id: 'deal_label', label: 'Deal label is', icon: '🏷️', options: ['hot', 'warm', 'cold'] },
+    { id: 'deal_stage_is', label: 'Deal is in stage', icon: '📦', options: ['Lead In', 'Contact Made', 'Site Survey', 'Proposal', 'Negotiation'] },
     { id: 'deal_value_gt', label: 'Deal value > amount', icon: '💲' },
     { id: 'deal_value_lt', label: 'Deal value < amount', icon: '💲' },
+    { id: 'deal_value_between', label: 'Deal value between X and Y', icon: '💰' },
+    { id: 'probability_gt', label: 'Probability > X%', icon: '📊' },
+    { id: 'probability_lt', label: 'Probability < X%', icon: '📉' },
+    { id: 'days_open_gt', label: 'Days open > X', icon: '📅' },
+    { id: 'days_open_lt', label: 'Days open < X', icon: '📅' },
+    { id: 'expected_close_within', label: 'Expected close within X days', icon: '🗓️' },
     { id: 'has_contact', label: 'Deal has contact assigned', icon: '👤' },
     { id: 'has_company', label: 'Deal has company linked', icon: '🏢' },
-    { id: 'days_open_gt', label: 'Days open > X', icon: '📅' },
-    { id: 'probability_gt', label: 'Probability > X%', icon: '📊' },
+    { id: 'has_notes', label: 'Deal has notes', icon: '📝' },
+    { id: 'has_products', label: 'Deal has products/line items', icon: '📦' },
     { id: 'contact_has_email', label: 'Contact has email', icon: '📧' },
+    { id: 'contact_has_phone', label: 'Contact has phone number', icon: '📱' },
+    { id: 'custom_field_equals', label: 'Custom field equals value', icon: '🔧' },
+    { id: 'deal_age_range', label: 'Deal age in range (X-Y days)', icon: '⏱️' },
 ];
 
 const ACTION_TYPES = [
+    // Activity actions
     { id: 'create_activity', label: 'Create follow-up activity', icon: '✅' },
+    { id: 'create_task', label: 'Create task', icon: '📋' },
+    // Communication actions
     { id: 'send_email', label: 'Send email template', icon: '📧' },
+    { id: 'send_sms', label: 'Send SMS (Twilio)', icon: '📱' },
+    { id: 'send_push', label: 'Send push notification', icon: '🔔' },
+    // Deal actions
     { id: 'move_stage', label: 'Move deal to stage', icon: '➡️' },
-    { id: 'notify_slack', label: 'Send Slack notification', icon: '💬' },
-    { id: 'notify_teams', label: 'Send Teams notification', icon: '👥' },
     { id: 'update_label', label: 'Update deal label', icon: '🏷️' },
     { id: 'update_probability', label: 'Set probability', icon: '📊' },
+    { id: 'update_field', label: 'Update custom field', icon: '🔧' },
     { id: 'add_note', label: 'Add note to deal', icon: '📝' },
+    { id: 'add_tag', label: 'Add tag to contact', icon: '🏷️' },
+    { id: 'remove_tag', label: 'Remove tag from contact', icon: '✂️' },
     { id: 'assign_owner', label: 'Assign deal owner', icon: '👤' },
+    { id: 'duplicate_deal', label: 'Duplicate deal (renewal)', icon: '📑' },
+    { id: 'create_deal', label: 'Create new deal from contact', icon: '➕' },
+    // Notification actions
+    { id: 'notify_slack', label: 'Send Slack notification', icon: '💬' },
+    { id: 'notify_teams', label: 'Send Teams notification', icon: '👥' },
+    // Integration actions
     { id: 'webhook', label: 'Fire webhook', icon: '🔗' },
-    { id: 'wait', label: 'Wait / delay', icon: '⏳' },
-    { id: 'send_sms', label: 'Send SMS (Twilio)', icon: '📱' },
+    { id: 'zapier_trigger', label: 'Trigger Zapier workflow', icon: '⚡' },
+    // Flow control
+    { id: 'wait', label: 'Wait / delay (days)', icon: '⏳' },
+    { id: 'wait_hours', label: 'Wait / delay (hours)', icon: '⏱️' },
 ];
 
 const SAMPLE_RULES = [
@@ -101,6 +146,37 @@ const SAMPLE_RULES = [
             { type: 'action', actionId: 'send_email', config: { template: 'Introduction' } },
             { type: 'action', actionId: 'create_activity', config: { title: 'Call new lead', activityType: 'call' } },
             { type: 'action', actionId: 'notify_slack', config: { message: '📝 New lead from website form!' } },
+        ]
+    },
+    {
+        id: 9, name: 'Overdue activity escalation', trigger: 'activity_overdue', active: true,
+        steps: [
+            { type: 'action', actionId: 'send_push', config: { message: '🔴 You have an overdue activity!' } },
+            { type: 'action', actionId: 'wait_hours', config: { hours: 4 } },
+            { type: 'action', actionId: 'notify_teams', config: { message: '⚠️ Activity still overdue — needs attention' } },
+        ]
+    },
+    {
+        id: 10, name: 'Close date passed warning', trigger: 'deal_close_date_passed', active: true,
+        steps: [
+            { type: 'condition', conditionId: 'deal_stage_is', value: 'Negotiation' },
+            { type: 'action', actionId: 'send_push', config: { message: '⚠️ Deal past expected close date' } },
+            { type: 'action', actionId: 'create_activity', config: { title: 'Follow up — expected close date passed', activityType: 'call' } },
+        ]
+    },
+    {
+        id: 11, name: 'Low probability deal review', trigger: 'deal_probability_changed', active: true,
+        steps: [
+            { type: 'condition', conditionId: 'probability_lt', value: '20' },
+            { type: 'action', actionId: 'update_label', config: { label: 'cold' } },
+            { type: 'action', actionId: 'add_note', config: { text: 'Auto: Probability dropped below 20% — marked cold' } },
+        ]
+    },
+    {
+        id: 12, name: 'Deal moved backward alert', trigger: 'deal_stage_backward', active: true,
+        steps: [
+            { type: 'action', actionId: 'notify_teams', config: { message: '⬅️ Deal moved backward — review needed' } },
+            { type: 'action', actionId: 'create_activity', config: { title: 'Review: deal moved backward', activityType: 'task' } },
         ]
     },
 ];
