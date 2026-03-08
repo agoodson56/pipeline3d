@@ -46,7 +46,7 @@ function generateProspects(filters, count = 20) {
 }
 
 const CHATBOT_MESSAGES = [
-    { from: 'bot', text: '👋 Hi there! Welcome to 3D TSI. How can I help you today?', time: '2:30 PM' },
+    { from: 'bot', text: '👋 Hi there! Welcome to 3D Technology Services Inc. How can I help you today?', time: '2:30 PM' },
     { from: 'visitor', text: 'I need a quote for a network cabling project', time: '2:31 PM' },
     { from: 'bot', text: 'Great! I can help with that. To get you an accurate quote, I\'ll need a few details:\n\n1. 📍 Project location (city/state)\n2. 📐 Approximate square footage\n3. 🔌 Number of network drops needed\n4. 📅 Target completion date\n\nFeel free to share what you know!', time: '2:31 PM' },
     { from: 'visitor', text: 'Houston TX, about 15,000 sqft office, need around 120 drops, hoping to finish by end of April', time: '2:32 PM' },
@@ -90,7 +90,7 @@ export default function Prospector({ toast, contacts }) {
     // Chatbot
     const [chatbotConfig, setChatbotConfig] = useState({
         greeting: '👋 Hi there! How can I help you today?',
-        name: '3D TSI Assistant',
+        name: '3D Technology Services Assistant',
         color: '#0D9488',
         captureEmail: true,
         capturePhone: false,

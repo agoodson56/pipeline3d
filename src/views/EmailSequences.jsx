@@ -4,7 +4,7 @@ const PRESET_SEQUENCES = [
     {
         id: 1, name: 'New Lead Nurture', status: 'active', enrolled: 12,
         steps: [
-            { day: 0, type: 'email', template: 'Introduction', subject: 'Welcome to 3D TSI' },
+            { day: 0, type: 'email', template: 'Introduction', subject: 'Welcome to 3D Technology Services Inc.' },
             { day: 3, type: 'task', action: 'Follow-up call' },
             { day: 7, type: 'email', template: 'Follow-Up', subject: 'Quick check-in' },
             { day: 14, type: 'email', template: 'Proposal', subject: 'Here\'s what we can do for you' },
@@ -14,7 +14,7 @@ const PRESET_SEQUENCES = [
     {
         id: 2, name: 'Post-Proposal Follow-up', status: 'active', enrolled: 5,
         steps: [
-            { day: 0, type: 'email', template: 'Proposal Sent', subject: 'Your proposal from 3D TSI' },
+            { day: 0, type: 'email', template: 'Proposal Sent', subject: 'Your proposal from 3D Technology Services Inc.' },
             { day: 2, type: 'task', action: 'Check if proposal was opened' },
             { day: 5, type: 'email', template: 'Follow-Up', subject: 'Checking in on our proposal' },
             { day: 10, type: 'email', template: 'Check-In', subject: 'Any questions about the proposal?' },
@@ -25,7 +25,7 @@ const PRESET_SEQUENCES = [
         id: 3, name: 'Re-Engagement (Cold Leads)', status: 'paused', enrolled: 8,
         steps: [
             { day: 0, type: 'email', template: 'Check-In', subject: 'It\'s been a while!' },
-            { day: 7, type: 'email', template: 'Follow-Up', subject: 'New solutions from 3D TSI' },
+            { day: 7, type: 'email', template: 'Follow-Up', subject: 'New solutions from 3D Technology Services Inc.' },
             { day: 14, type: 'task', action: 'Assess response — archive or escalate' },
         ],
     },

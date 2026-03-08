@@ -2,11 +2,11 @@ import { useState, useMemo } from 'react';
 import * as api from '../api.js';
 
 const TEMPLATES = [
-    { id: 'intro', name: 'Introduction', subject: 'Introduction — {company}', body: 'Hi {contact},\n\nI wanted to introduce myself and share how we can help {company} achieve its goals.\n\nWould you be available for a quick call this week?\n\nBest regards' },
-    { id: 'followup', name: 'Follow-Up', subject: 'Following up — {deal}', body: 'Hi {contact},\n\nI wanted to follow up on our previous conversation about {deal}.\n\nDo you have any questions or would you like to schedule a next step?\n\nLooking forward to hearing from you.' },
-    { id: 'proposal', name: 'Proposal Sent', subject: 'Proposal for {deal}', body: 'Hi {contact},\n\nThank you for the opportunity. Please find attached our proposal for {deal}.\n\nKey highlights:\n• Scope: [describe scope]\n• Investment: ${value}\n• Timeline: [timeline]\n\nLet me know if you have any questions.' },
-    { id: 'thankyou', name: 'Thank You / Won', subject: 'Thank you — {deal}', body: 'Hi {contact},\n\nThank you for choosing us for {deal}! We are excited to partner with {company}.\n\nOur team will be in touch shortly to kick things off.\n\nBest regards' },
-    { id: 'checkin', name: 'Check-In', subject: 'Checking in — {deal}', body: 'Hi {contact},\n\nJust checking in on {deal}. I wanted to see if there are any updates on your end or if there is anything we can help with.\n\nLooking forward to your response.' },
+    { id: 'intro', name: 'Introduction', subject: 'Introduction — 3D Technology Services Inc. & {company}', body: 'Hi {contact},\n\nI wanted to introduce myself — I\'m reaching out from 3D Technology Services Inc. I\'d love to share how we can help {company} achieve its technology goals.\n\nWould you be available for a quick call this week to discuss?\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
+    { id: 'followup', name: 'Follow-Up', subject: 'Following up — {deal}', body: 'Hi {contact},\n\nI wanted to follow up on our previous conversation about {deal}.\n\nDo you have any questions or would you like to schedule a next step? We\'re here to help make this as seamless as possible.\n\nLooking forward to hearing from you.\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
+    { id: 'proposal', name: 'Proposal Sent', subject: 'Proposal for {deal} — 3D Technology Services Inc.', body: 'Hi {contact},\n\nThank you for the opportunity. Please find attached our proposal for {deal}.\n\nKey highlights:\n• Scope: [describe scope]\n• Investment: ${value}\n• Timeline: [timeline]\n\nPlease don\'t hesitate to reach out if you have any questions. We look forward to working with {company}.\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
+    { id: 'thankyou', name: 'Thank You / Won', subject: 'Welcome aboard — {deal}', body: 'Hi {contact},\n\nThank you for choosing 3D Technology Services Inc. for {deal}! We are excited to partner with {company} and deliver exceptional results.\n\nOur team will be in touch shortly to kick things off.\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
+    { id: 'checkin', name: 'Check-In', subject: 'Checking in — {deal}', body: 'Hi {contact},\n\nJust checking in on {deal}. I wanted to see if there are any updates on your end or if there\'s anything 3D Technology Services Inc. can help with.\n\nLooking forward to your response.\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
 ];
 
 export default function EmailComposer({ deals, contacts, toast, refreshEmails }) {
@@ -47,7 +47,7 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
         await new Promise(r => setTimeout(r, 1500));
         const deal = deals.find(d => d.title === draftDeal) || {};
         setDraftSubject(`Re: ${draftDeal || 'Follow-up'}`);
-        setDraftBody(`Hi ${draftContact || 'there'},\n\n${aiPrompt.includes('follow') ? 'I wanted to follow up on our recent conversation.' : 'Thank you for your time.'}\n\n${aiPrompt.includes('proposal') ? `I\'ve prepared a proposal for ${draftDeal || 'the project'} at ${deal.value ? '$' + deal.value.toLocaleString() : 'a competitive rate'}.` : 'I believe we can add significant value to your team.'}\n\nWould you be available for a brief call to discuss next steps?\n\nBest regards`);
+        setDraftBody(`Hi ${draftContact || 'there'},\n\n${aiPrompt.includes('follow') ? 'I wanted to follow up on our recent conversation.' : 'Thank you for your time.'}\n\n${aiPrompt.includes('proposal') ? `I\'ve prepared a proposal for ${draftDeal || 'the project'} at ${deal.value ? '$' + deal.value.toLocaleString() : 'a competitive rate'}.` : 'I believe 3D Technology Services Inc. can add significant value to your team.'}\n\nWould you be available for a brief call to discuss next steps?\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com`);
         setAiDrafting(false);
         toast('AI draft generated!');
     };
