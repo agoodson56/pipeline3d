@@ -77,6 +77,26 @@ function App() {
     return { timeGreet, firstName };
   };
 
+  const speakGreeting = (timeGreet, firstName) => {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      // Cancel any pending speech
+      window.speechSynthesis.cancel();
+      const msg = new SpeechSynthesisUtterance(`${timeGreet}, ${firstName}! Let's win today!`);
+      msg.rate = 0.95;
+      msg.pitch = 1.05;
+      msg.volume = 1;
+      // Try to pick a natural-sounding English voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+        voices.find(v => v.lang.startsWith('en') && v.name.includes('Samantha')) ||
+        voices.find(v => v.lang.startsWith('en') && !v.localService) ||
+        voices.find(v => v.lang.startsWith('en'));
+      if (preferred) msg.voice = preferred;
+      window.speechSynthesis.speak(msg);
+    } catch { /* Speech not available, fail silently */ }
+  };
+
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   const [pipelines, setPipelines] = useState([]);
@@ -150,6 +170,7 @@ function App() {
     const { timeGreet, firstName } = getGreeting(result.user.name);
     setWelcomeBanner({ timeGreet, firstName });
     setTimeout(() => setWelcomeBanner(null), 4000);
+    speakGreeting(timeGreet, firstName);
     // Request push notification permission
     requestNotificationPermission();
   };
@@ -164,6 +185,7 @@ function App() {
     const { timeGreet, firstName } = getGreeting(result.user.name);
     setWelcomeBanner({ timeGreet, firstName });
     setTimeout(() => setWelcomeBanner(null), 4000);
+    speakGreeting(timeGreet, firstName);
     requestNotificationPermission();
   };
 
