@@ -109,12 +109,6 @@ const GUIDE_SECTIONS = [
         ]
     },
     {
-        title: '⚡ Automations',
-        content: [
-            { heading: 'Create an Automation', text: '1. Go to Automations\n2. Click + New Automation\n3. Set the Trigger (when something happens)\n4. Set the Action (what should happen)\n5. Save and activate\n\nExamples:\n• Deal moves to "Site Survey" → auto-create task: "Conduct site survey — measure & document"\n• New deal created → auto-assign follow-up call\n• Deal won → send thank-you email + Slack/Teams notification' },
-        ]
-    },
-    {
         title: '🧲 Lead Capture — Web Forms',
         content: [
             { heading: 'How It Works', text: '1. Go to Lead Capture\n2. Browse form templates or create a custom form\n3. Customize the fields\n4. Copy the embed code for your website\n\nWhen someone fills out the form, they\'re auto-added as a contact in Pipeline3D.' },
@@ -226,7 +220,7 @@ function UserGuide() {
 
 const KB_ARTICLES = [
     { id: 1, category: 'Getting Started', title: 'How to create your first deal', content: 'Navigate to Pipeline → Click + Add Deal → Fill in deal title (e.g. "Acme Corp — Security System"), value, stage, and contact → Click Create Deal. Your deal will appear as a card in the Kanban board. Tip: use the naming convention [Customer] — [Service Line].' },
-    { id: 2, category: 'Getting Started', title: 'Understanding your Dashboard', content: 'The Dashboard shows 4 KPI cards: Pipeline Value, Won Revenue, Weighted Forecast, and Win Rate. Below are Stage Distribution charts and Recent Deals. Check this daily for a pulse on your sales performance.' },
+    { id: 2, category: 'Getting Started', title: 'Understanding your Dashboard', content: 'The Dashboard shows 11 KPI metrics across two rows: Pipeline Value, Won Revenue, Weighted Forecast, Win Rate, Pipeline Velocity, Average Deal Size, Average Days Open, Hot Deals, Rotting Deals, Pending Activities, and Overdue Activities. Plus a quota progress bar. Below are Stage Distribution charts and Recent Deals. Check this daily for a pulse on your sales performance.' },
     { id: 3, category: 'Getting Started', title: 'Installing Pipeline3D on your phone', content: 'Android: Open Chrome → visit pipeline3d.pages.dev → tap Install App. iOS: Open Safari → tap Share → Add to Home Screen → Add. The app works offline and opens full-screen.' },
     { id: 4, category: 'Pipeline', title: 'Drag and drop deals between stages', content: 'Click and hold any deal card on the Kanban board. Drag it to the target stage column and release. The deal will be saved in the new stage automatically.' },
     { id: 5, category: 'Pipeline', title: 'Understanding deal rotting indicators', content: 'Deals show age badges: green (<14d fresh), yellow (14-30d aging), orange (30-60d warning), red (60d+ critical with pulsing border). Focus on red deals first — they need immediate action.' },
