@@ -155,6 +155,36 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
                             </div>
                         </div>
                     ))}
+
+                    {/* Trade-Specific Pipeline Templates */}
+                    <div style={{ marginTop: 24, padding: '20px', background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>🏗️ Trade-Specific Pipeline Templates</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Pre-configured stages for each trade — ready to use or customize.</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
+                            {[
+                                { name: '🔥 Fire Alarm', color: '#ef4444', stages: ['Lead In', 'Contact Made', 'Site Survey', 'Design & Engineering', 'AHJ Submittal', 'Proposal', 'Negotiation', 'Won'] },
+                                { name: '📡 DAS', color: '#8b5cf6', stages: ['Lead In', 'Contact Made', 'RF Survey', 'Carrier Coordination', 'Design & Engineering', 'Proposal', 'Negotiation', 'Won'] },
+                                { name: '🔐 Access Control', color: '#3b82f6', stages: ['Lead In', 'Contact Made', 'Security Consulting', 'Site Survey', 'System Design', 'Proposal', 'Negotiation', 'Won'] },
+                                { name: '🔌 Structured Cabling', color: '#10b981', stages: ['Lead In', 'Contact Made', 'Site Survey', 'Pathway Design', 'Proposal', 'Negotiation', 'Won'] },
+                                { name: '📹 CCTV / Surveillance', color: '#f59e0b', stages: ['Lead In', 'Contact Made', 'Site Survey', 'Camera Layout Design', 'Proposal', 'Negotiation', 'Won'] },
+                                { name: '🔊 Audio Visual', color: '#ec4899', stages: ['Lead In', 'Contact Made', 'Needs Assessment', 'AV Design', 'Proposal', 'Negotiation', 'Won'] },
+                            ].map((tmpl, idx) => (
+                                <div key={idx} style={{ padding: 14, background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: tmpl.color }} />
+                                        <span style={{ fontWeight: 600, fontSize: 13 }}>{tmpl.name}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                        {tmpl.stages.map((s, i) => (
+                                            <span key={i} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 8, background: `${tmpl.color}15`, color: tmpl.color, border: `1px solid ${tmpl.color}30` }}>
+                                                {s}{i < tmpl.stages.length - 1 ? ' →' : ''}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
 

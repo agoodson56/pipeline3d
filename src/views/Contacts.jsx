@@ -1,6 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import * as api from '../api.js';
 import { exportCSV } from '../utils.js';
+
+const TRADE_TAGS = [
+    { label: 'GC', color: '#3b82f6' },
+    { label: 'architect', color: '#8b5cf6' },
+    { label: 'facilities-mgr', color: '#10b981' },
+    { label: 'security-director', color: '#ef4444' },
+    { label: 'IT-director', color: '#06b6d4' },
+    { label: 'end-user', color: '#f59e0b' },
+    { label: 'decision-maker', color: '#ec4899' },
+    { label: 'project-mgr', color: '#14b8a6' },
+    { label: 'engineer', color: '#6366f1' },
+    { label: 'consultant', color: '#78716c' },
+];
 
 export default function Contacts({ contacts, companies, toast, refreshContacts }) {
     const [showAdd, setShowAdd] = useState(false);
@@ -103,7 +116,25 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                 </div>
                 <div className="form-group">
                     <label className="form-label">Tags (comma separated)</label>
-                    <input name="tags" className="form-input" placeholder="decision-maker, technical" defaultValue={(data?.tags || []).join(', ')} />
+                    <input name="tags" id="contact-tags-input" className="form-input" placeholder="GC, architect, facilities-mgr" defaultValue={(data?.tags || []).join(', ')} />
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
+                        {TRADE_TAGS.map(t => (
+                            <button key={t.label} type="button" style={{
+                                fontSize: 10, padding: '2px 8px', borderRadius: 10,
+                                background: `${t.color}18`, color: t.color, border: `1px solid ${t.color}44`,
+                                cursor: 'pointer', fontWeight: 600,
+                            }} onClick={() => {
+                                const inp = document.getElementById('contact-tags-input');
+                                if (inp) {
+                                    const current = inp.value.split(',').map(s => s.trim()).filter(Boolean);
+                                    if (!current.includes(t.label)) {
+                                        inp.value = [...current, t.label].join(', ');
+                                        inp.dispatchEvent(new Event('input', { bubbles: true }));
+                                    }
+                                }
+                            }}>{t.label}</button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </>

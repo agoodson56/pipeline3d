@@ -31,7 +31,7 @@ const GUIDE_SECTIONS = [
     {
         title: '👥 Contacts — Your People',
         content: [
-            { heading: 'Adding a Contact', text: '1. Click + Add Contact\n2. Fill in: Name (required), Email, Phone (Office), 📱 Mobile Phone, Company, Role, Tags\n3. Click Add Contact\n\n💡 Tags help you categorize: "decision-maker", "GC", "architect", "facilities-mgr", "end-user"' },
+            { heading: 'Adding a Contact', text: '1. Click + Add Contact\n2. Fill in: Name (required), Email, Phone (Office), 📱 Mobile Phone, Company, Role, Tags\n3. Click Add Contact\n\n💡 Quick-tag buttons: Click any trade-specific tag to add it instantly — GC, architect, facilities-mgr, security-director, IT-director, end-user, decision-maker, project-mgr, engineer, consultant.' },
             { heading: 'Searching', text: 'Use the 🔍 search bar — it searches by name, email, company, and mobile number.' },
             { heading: 'Viewing Details', text: 'Click any row to see full contact info including both Phone and Mobile numbers.' },
             { heading: 'Export', text: 'Click ⬇ CSV to download all contacts as a spreadsheet (includes Mobile column).' },
@@ -138,7 +138,7 @@ const GUIDE_SECTIONS = [
         title: '⚙️ Settings',
         content: [
             { heading: 'Your Profile', text: 'Click your name at the bottom of the sidebar to view your profile or sign out.' },
-            { heading: 'Settings Page', text: '• General — company info (3D Technology Services Inc.), currency, fiscal year\n• Custom Fields — Service Line, Project Type, Lead Source, Bid Due Date, Territory, and more\n• Pipelines — customize stages (Lead In → Contact Made → Site Survey → Proposal → Negotiation → Won)\n• Security — Two-Factor Authentication (2FA), Push Notifications, Offline Mode\n• Users (admin only) — manage the sales team, add/remove reps' },
+            { heading: 'Settings Page', text: '• General — company info (3D Technology Services Inc.), currency, fiscal year\n• Custom Fields — Service Line, Project Type, Lead Source, Bid Due Date, Territory, and more\n• Pipelines — customize stages + 6 trade-specific templates:\n  🔥 Fire Alarm (includes AHJ Submittal)\n  📡 DAS (includes RF Survey, Carrier Coordination)\n  🔐 Access Control (includes Security Consulting)\n  🔌 Structured Cabling (includes Pathway Design)\n  📹 CCTV (includes Camera Layout Design)\n  🔊 Audio Visual (includes Needs Assessment, AV Design)\n• Security — Two-Factor Authentication (2FA), Push Notifications, Offline Mode\n• Users (admin only) — manage the sales team, add/remove reps' },
         ]
     },
     {
