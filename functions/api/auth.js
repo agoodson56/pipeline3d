@@ -159,9 +159,17 @@ async function handleLogin({ email, password }, env, request) {
     }
 
     // Look up user by email only (not by hash — needed for PBKDF2)
-    const user = await env.DB.prepare(
-        'SELECT id, email, name, role, status, avatar_color, password_hash, must_change_pw FROM users WHERE email = ?'
-    ).bind(normalizedEmail).first();
+    let user;
+    try {
+        user = await env.DB.prepare(
+            'SELECT id, email, name, role, status, avatar_color, password_hash, must_change_pw FROM users WHERE email = ?'
+        ).bind(normalizedEmail).first();
+    } catch {
+        // Fallback if must_change_pw column doesn't exist yet (pre-migration)
+        user = await env.DB.prepare(
+            'SELECT id, email, name, role, status, avatar_color, password_hash FROM users WHERE email = ?'
+        ).bind(normalizedEmail).first();
+    }
 
     if (!user) {
         await recordLoginAttempt(normalizedEmail, false, env, request);
@@ -215,7 +223,7 @@ async function handleLogin({ email, password }, env, request) {
         token,
         user: {
             id: user.id, email: user.email, name: user.name, role: user.role,
-            avatarColor: user.avatar_color, mustChangePw: !!user.must_change_pw,
+            avatarColor: user.avatar_color, mustChangePw: !!(user.must_change_pw),
         },
     }, 200, request);
 }
@@ -232,10 +240,19 @@ async function handleLogout({ token }, env, request) {
 async function handleMe({ token }, env, request) {
     if (!token) return json({ error: 'No token provided' }, 401, request);
 
-    const session = await env.DB.prepare(
-        `SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.status, u.avatar_color, u.must_change_pw
-         FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ?`
-    ).bind(token).first();
+    let session;
+    try {
+        session = await env.DB.prepare(
+            `SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.status, u.avatar_color, u.must_change_pw
+             FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ?`
+        ).bind(token).first();
+    } catch {
+        // Fallback if must_change_pw column doesn't exist yet
+        session = await env.DB.prepare(
+            `SELECT s.user_id, s.expires_at, u.id, u.email, u.name, u.role, u.status, u.avatar_color
+             FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ?`
+        ).bind(token).first();
+    }
 
     if (!session) return json({ error: 'Invalid session' }, 401, request);
     if (new Date(session.expires_at) < new Date()) {
@@ -247,7 +264,7 @@ async function handleMe({ token }, env, request) {
     return json({
         user: {
             id: session.id, email: session.email, name: session.name, role: session.role,
-            avatarColor: session.avatar_color, mustChangePw: !!session.must_change_pw,
+            avatarColor: session.avatar_color, mustChangePw: !!(session.must_change_pw),
         },
     }, 200, request);
 }
@@ -355,7 +372,12 @@ async function handleChangePassword({ token, currentPassword, newPassword, userI
     if (!newPassword || newPassword.length < 8) return json({ error: 'New password must be at least 8 characters' }, 400, request);
 
     const newHash = await hashPassword(newPassword);
-    await env.DB.prepare("UPDATE users SET password_hash = ?, must_change_pw = 0, updated_at = datetime('now') WHERE id = ?").bind(newHash, targetId).run();
+    try {
+        await env.DB.prepare("UPDATE users SET password_hash = ?, must_change_pw = 0, updated_at = datetime('now') WHERE id = ?").bind(newHash, targetId).run();
+    } catch {
+        // Fallback if must_change_pw column doesn't exist yet
+        await env.DB.prepare("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?").bind(newHash, targetId).run();
+    }
 
     // Invalidate all OTHER sessions for this user (security: old sessions can't be reused)
     await env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND token != ?').bind(targetId, token).run();
