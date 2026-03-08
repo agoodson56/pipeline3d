@@ -9,6 +9,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     const [addStage, setAddStage] = useState('');
     const [noteText, setNoteText] = useState('');
     const [detailTab, setDetailTab] = useState('details');
+    const [editForm, setEditForm] = useState(null);
     const dragItem = useRef(null);
     const dragOverStage = useRef(null);
 
@@ -113,6 +114,43 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
             await refreshDeals();
             toast('Deal deleted');
             setSelectedDeal(null);
+        } catch (err) { toast(err.message, 'error'); }
+    };
+
+    const handleEditDeal = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const changes = [];
+        const newTitle = fd.get('title');
+        const newValue = parseFloat(fd.get('value')) || 0;
+        const newContact = fd.get('contact');
+        const newCompany = fd.get('company');
+        const newProb = parseInt(fd.get('probability')) || 20;
+        const newLabel = fd.get('label') || 'warm';
+        const newClose = fd.get('expectedClose') || '';
+        if (newTitle !== selectedDeal.title) changes.push(`Title → "${newTitle}"`);
+        if (newValue !== selectedDeal.value) changes.push(`Value → $${newValue.toLocaleString()}`);
+        if (newContact !== selectedDeal.contact) changes.push(`Contact → ${newContact || 'None'}`);
+        if (newCompany !== selectedDeal.company) changes.push(`Company → ${newCompany || 'None'}`);
+        if (newProb !== selectedDeal.probability) changes.push(`Probability → ${newProb}%`);
+        if (newLabel !== selectedDeal.label) changes.push(`Label → ${newLabel}`);
+        if (newClose !== selectedDeal.expectedClose) changes.push(`Expected Close → ${newClose || 'None'}`);
+        const updated = {
+            ...selectedDeal,
+            title: newTitle, value: newValue, contact: newContact,
+            company: newCompany, probability: newProb, label: newLabel,
+            expectedClose: newClose,
+            history: [...(selectedDeal.history || []),
+            ...(changes.length > 0 ? [{ id: Date.now(), action: 'edit', detail: 'Edited: ' + changes.join(', '), date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }] : []),
+            ],
+        };
+        try {
+            await api.saveDeal(updated);
+            await refreshDeals();
+            setSelectedDeal(updated);
+            setDetailTab('details');
+            setEditForm(null);
+            toast(changes.length > 0 ? 'Deal updated!' : 'No changes');
         } catch (err) { toast(err.message, 'error'); }
     };
 
@@ -293,6 +331,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                         <div className="modal-body">
                             <div className="detail-tabs">
                                 <button className={`detail-tab ${detailTab === 'details' ? 'active' : ''}`} onClick={() => setDetailTab('details')}>Details</button>
+                                <button className={`detail-tab ${detailTab === 'edit' ? 'active' : ''}`} onClick={() => { setDetailTab('edit'); setEditForm(selectedDeal); }}>✏️ Edit</button>
                                 <button className={`detail-tab ${detailTab === 'products' ? 'active' : ''}`} onClick={() => setDetailTab('products')}>
                                     Products {selectedDeal.products?.length > 0 && `(${selectedDeal.products.length})`}
                                 </button>
@@ -324,6 +363,53 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                         </div>
                                     </div>
                                 </>
+                            )}
+
+                            {detailTab === 'edit' && (
+                                <form onSubmit={handleEditDeal}>
+                                    <div className="form-group" style={{ marginBottom: 12 }}>
+                                        <label className="form-label">Deal Title *</label>
+                                        <input name="title" className="form-input" required defaultValue={selectedDeal.title} />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Value ($)</label>
+                                            <input name="value" className="form-input" type="number" step="0.01" defaultValue={selectedDeal.value} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Probability (%)</label>
+                                            <input name="probability" className="form-input" type="number" min="0" max="100" defaultValue={selectedDeal.probability} />
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Contact</label>
+                                            <input name="contact" className="form-input" placeholder="Contact name" defaultValue={selectedDeal.contact} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Company</label>
+                                            <input name="company" className="form-input" placeholder="Company name" defaultValue={selectedDeal.company} />
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Label</label>
+                                            <select name="label" className="form-select" defaultValue={selectedDeal.label}>
+                                                <option value="hot">🔥 Hot</option>
+                                                <option value="warm">🟡 Warm</option>
+                                                <option value="cold">🧊 Cold</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Expected Close</label>
+                                            <input name="expectedClose" className="form-input" type="date" defaultValue={selectedDeal.expectedClose} />
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+                                        <button type="button" className="btn btn-ghost" onClick={() => setDetailTab('details')}>Cancel</button>
+                                        <button type="submit" className="btn btn-primary">💾 Save Changes</button>
+                                    </div>
+                                </form>
                             )}
 
                             {detailTab === 'products' && (
@@ -427,6 +513,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-danger" onClick={() => handleDeleteDeal(selectedDeal.id)}>Delete</button>
+                            <button className="btn btn-ghost" onClick={() => { setDetailTab('edit'); setEditForm(selectedDeal); }}>✏️ Edit</button>
                             <button className="btn btn-ghost" onClick={() => setSelectedDeal(null)}>Close</button>
                         </div>
                     </div>

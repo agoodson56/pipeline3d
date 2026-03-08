@@ -5,6 +5,7 @@ import { exportCSV } from '../utils.js';
 export default function Contacts({ contacts, companies, toast, refreshContacts }) {
     const [showAdd, setShowAdd] = useState(false);
     const [selected, setSelected] = useState(null);
+    const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState('');
 
     const filtered = contacts.filter(c =>
@@ -37,6 +38,28 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
         } catch (err) { toast(err.message, 'error'); }
     };
 
+    const handleEdit = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const updated = {
+            ...editing,
+            name: fd.get('name'),
+            email: fd.get('email'),
+            phone: fd.get('phone'),
+            mobile: fd.get('mobile'),
+            company: fd.get('company'),
+            role: fd.get('role'),
+            tags: fd.get('tags') ? fd.get('tags').split(',').map(t => t.trim()) : [],
+        };
+        try {
+            await api.saveContact(updated);
+            await refreshContacts();
+            toast('Contact updated!');
+            setEditing(null);
+            setSelected(null);
+        } catch (err) { toast(err.message, 'error'); }
+    };
+
     const handleDelete = async (id) => {
         try {
             await api.deleteContact(id);
@@ -45,6 +68,46 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
             setSelected(null);
         } catch (err) { toast(err.message, 'error'); }
     };
+
+    // Shared form fields component
+    const ContactFormFields = ({ data }) => (
+        <>
+            <div className="form-group">
+                <label className="form-label">Name *</label>
+                <input name="name" className="form-input" required placeholder="Full name" defaultValue={data?.name || ''} />
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label className="form-label">Email</label>
+                    <input name="email" className="form-input" type="email" placeholder="email@example.com" defaultValue={data?.email || ''} />
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Phone (Office)</label>
+                    <input name="phone" className="form-input" placeholder="+1 (555) 000-0000" defaultValue={data?.phone || ''} />
+                </div>
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label className="form-label">📱 Mobile Phone</label>
+                    <input name="mobile" className="form-input" placeholder="+1 (555) 000-0000" defaultValue={data?.mobile || ''} />
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Company</label>
+                    <input name="company" className="form-input" placeholder="Company name" defaultValue={data?.company || ''} />
+                </div>
+            </div>
+            <div className="form-row">
+                <div className="form-group">
+                    <label className="form-label">Role</label>
+                    <input name="role" className="form-input" placeholder="Job title" defaultValue={data?.role || ''} />
+                </div>
+                <div className="form-group">
+                    <label className="form-label">Tags (comma separated)</label>
+                    <input name="tags" className="form-input" placeholder="decision-maker, technical" defaultValue={(data?.tags || []).join(', ')} />
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <div>
@@ -98,40 +161,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="modal-body">
-                                <div className="form-group">
-                                    <label className="form-label">Name *</label>
-                                    <input name="name" className="form-input" required placeholder="Full name" />
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Email</label>
-                                        <input name="email" className="form-input" type="email" placeholder="email@example.com" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Phone (Office)</label>
-                                        <input name="phone" className="form-input" placeholder="+1 (555) 000-0000" />
-                                    </div>
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">📱 Mobile Phone</label>
-                                        <input name="mobile" className="form-input" placeholder="+1 (555) 000-0000" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Company</label>
-                                        <input name="company" className="form-input" placeholder="Company name" />
-                                    </div>
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Role</label>
-                                        <input name="role" className="form-input" placeholder="Job title" />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Tags (comma separated)</label>
-                                        <input name="tags" className="form-input" placeholder="decision-maker, technical" />
-                                    </div>
-                                </div>
+                                <ContactFormFields />
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-ghost" onClick={() => setShowAdd(false)}>Cancel</button>
@@ -142,8 +172,29 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                 </div>
             )}
 
+            {/* Edit Contact Modal */}
+            {editing && (
+                <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setEditing(null)}>
+                    <div className="modal">
+                        <div className="modal-header">
+                            <h3>✏️ Edit Contact</h3>
+                            <button className="modal-close" onClick={() => setEditing(null)}>✕</button>
+                        </div>
+                        <form onSubmit={handleEdit}>
+                            <div className="modal-body">
+                                <ContactFormFields data={editing} />
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">💾 Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Contact Detail Modal */}
-            {selected && (
+            {selected && !editing && (
                 <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setSelected(null)}>
                     <div className="modal">
                         <div className="modal-header">
@@ -168,6 +219,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-danger" onClick={() => handleDelete(selected.id)}>Delete</button>
+                            <button className="btn btn-ghost" onClick={() => { setEditing(selected); }}>✏️ Edit</button>
                             <button className="btn btn-ghost" onClick={() => setSelected(null)}>Close</button>
                         </div>
                     </div>
