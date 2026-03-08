@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import * as api from '../api.js';
+import { uid } from '../utils.js';
 
 const ICONS = { call: '📞', email: '📧', meeting: '🤝', task: '📋' };
 
@@ -25,7 +26,7 @@ export default function Activities({ activities, toast, refreshActivities }) {
         e.preventDefault();
         const fd = new FormData(e.target);
         const activity = {
-            id: Date.now(),
+            id: uid(),
             type: fd.get('type') || 'call',
             title: fd.get('title'),
             deal: fd.get('deal'),

@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import * as api from '../api.js';
-import { fmt, exportCSV } from '../utils.js';
+import { fmt, exportCSV, uid } from '../utils.js';
 
 export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     const [activePipeline, setActivePipeline] = useState(null);
@@ -58,7 +58,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
             ...deal,
             stage: stageName,
             history: [...(deal.history || []), {
-                id: Date.now(), action: 'stage',
+                id: uid(), action: 'stage',
                 detail: `Moved to ${stageName}`,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             }],
@@ -75,7 +75,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
         e.preventDefault();
         const fd = new FormData(e.target);
         const deal = {
-            id: Date.now(), title: fd.get('title'),
+            id: uid(), title: fd.get('title'),
             value: parseFloat(fd.get('value')) || 0,
             stage: addStage || stages[0]?.name || 'Lead In',
             pipelineId: currentPipeline.id,
@@ -98,7 +98,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     const moveDealToStage = async (deal, newStage) => {
         const updated = {
             ...deal, stage: newStage,
-            history: [...(deal.history || []), { id: Date.now(), action: 'stage', detail: `Moved to ${newStage}`, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }],
+            history: [...(deal.history || []), { id: uid(), action: 'stage', detail: `Moved to ${newStage}`, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }],
         };
         try {
             await api.saveDeal(updated);
@@ -141,7 +141,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
             company: newCompany, probability: newProb, label: newLabel,
             expectedClose: newClose,
             history: [...(selectedDeal.history || []),
-            ...(changes.length > 0 ? [{ id: Date.now(), action: 'edit', detail: 'Edited: ' + changes.join(', '), date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }] : []),
+            ...(changes.length > 0 ? [{ id: uid(), action: 'edit', detail: 'Edited: ' + changes.join(', '), date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }] : []),
             ],
         };
         try {
@@ -157,7 +157,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     const handleAddNote = async () => {
         if (!noteText.trim() || !selectedDeal) return;
         const updatedNotes = [...(selectedDeal.notes || []), {
-            id: Date.now(), text: noteText.trim(),
+            id: uid(), text: noteText.trim(),
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         }];
         const updated = { ...selectedDeal, notes: updatedNotes };
@@ -423,7 +423,7 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                             const qt = parseInt(document.getElementById('prod-qty').value) || 1;
                                             const pr = parseFloat(document.getElementById('prod-price').value) || 0;
                                             if (!nm) return;
-                                            const prods = [...(selectedDeal.products || []), { id: Date.now(), name: nm, qty: qt, price: pr, total: qt * pr }];
+                                            const prods = [...(selectedDeal.products || []), { id: uid(), name: nm, qty: qt, price: pr, total: qt * pr }];
                                             const totalVal = prods.reduce((s, p) => s + p.total, 0);
                                             const updated = { ...selectedDeal, products: prods, value: totalVal };
                                             try { await api.saveDeal(updated); await refreshDeals(); setSelectedDeal(updated); toast('Product added'); document.getElementById('prod-name').value = ''; document.getElementById('prod-price').value = ''; } catch (e) { toast(e.message, 'error'); }

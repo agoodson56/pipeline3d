@@ -29,6 +29,16 @@ async function hashPassword(password) {
     return `pbkdf2:${saltHex}:${hashHex}`;
 }
 
+/** Constant-time string comparison (prevents timing side-channel attacks) */
+function constantTimeEqual(a, b) {
+    if (a.length !== b.length) return false;
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+}
+
 /** Verify password against stored hash (supports both PBKDF2 and legacy SHA-256) */
 async function verifyPassword(password, storedHash) {
     if (storedHash.startsWith('pbkdf2:')) {
@@ -39,16 +49,25 @@ async function verifyPassword(password, storedHash) {
         const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
         const derived = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256);
         const computedHash = [...new Uint8Array(derived)].map(b => b.toString(16).padStart(2, '0')).join('');
-        return computedHash === expectedHash;
+        return constantTimeEqual(computedHash, expectedHash);
     }
     // Legacy SHA-256 (64 hex chars, no colons)
     const legacyHash = await sha256(password);
-    return legacyHash === storedHash;
+    return constantTimeEqual(legacyHash, storedHash);
 }
 
 /** Is this a legacy SHA-256 hash? (needs upgrade to PBKDF2) */
 function isLegacyHash(storedHash) {
     return !storedHash.startsWith('pbkdf2:');
+}
+
+/** Validate password complexity */
+function validatePasswordStrength(password) {
+    if (!password || password.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    return null;
 }
 
 /** Generate a secure random session token */
@@ -120,10 +139,10 @@ const LOCKOUT_MINUTES = 15;
 
 async function checkRateLimit(email, env) {
     try {
+        const cutoff = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000).toISOString();
         const result = await env.DB.prepare(
-            `SELECT COUNT(*) as cnt FROM login_attempts
-             WHERE email = ? AND success = 0 AND attempted_at > datetime('now', '-${LOCKOUT_MINUTES} minutes')`
-        ).bind(email.toLowerCase().trim()).first();
+            'SELECT COUNT(*) as cnt FROM login_attempts WHERE email = ? AND success = 0 AND attempted_at > ?'
+        ).bind(email.toLowerCase().trim(), cutoff).first();
         return (result?.cnt || 0) >= MAX_LOGIN_ATTEMPTS;
     } catch { return false; /* table may not exist yet — fail open */ }
 }
@@ -255,9 +274,9 @@ async function handleLogin({ email, password }, env, request) {
             .bind(upgradedHash, user.id).run();
     }
 
-    // Create session (30 day expiry)
+    // Create session (7 day expiry — rolling refresh on use)
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     await env.DB.prepare(
         'INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)'
@@ -348,7 +367,8 @@ async function handleRegister({ token, email, name, password, role }, env, reque
     if (!admin || admin.role !== 'admin') return json({ error: 'Admin access required' }, 403, request);
 
     if (!email || !name || !password) return json({ error: 'Email, name, and password are required' }, 400, request);
-    if (password.length < 8) return json({ error: 'Password must be at least 8 characters' }, 400, request);
+    const pwErr = validatePasswordStrength(password);
+    if (pwErr) return json({ error: pwErr }, 400, request);
 
     // Check if email already exists (generic error to prevent enumeration)
     const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email.toLowerCase().trim()).first();
@@ -442,7 +462,8 @@ async function handleChangePassword({ token, currentPassword, newPassword, userI
         if (!valid) return json({ error: 'Current password is incorrect' }, 400, request);
     }
 
-    if (!newPassword || newPassword.length < 8) return json({ error: 'New password must be at least 8 characters' }, 400, request);
+    const pwErr = validatePasswordStrength(newPassword);
+    if (pwErr) return json({ error: pwErr }, 400, request);
 
     const newHash = await hashPassword(newPassword);
     try {
@@ -528,6 +549,12 @@ async function handleVerify2FALogin({ challengeToken, code }, env, request) {
 
     if (!challenge) return json({ error: 'Challenge expired. Please login again.' }, 401, request);
 
+    // Rate limit: max 5 attempts per challenge
+    if ((challenge.attempts || 0) >= 5) {
+        try { await env.DB.prepare('DELETE FROM two_factor_challenges WHERE id = ?').bind(challengeToken).run(); } catch { }
+        return json({ error: 'Too many attempts. Please login again.' }, 429, request);
+    }
+
     // Get user's TOTP secret
     const user = await env.DB.prepare(
         'SELECT id, email, name, role, status, avatar_color, totp_secret, must_change_pw FROM users WHERE id = ?'
@@ -536,14 +563,20 @@ async function handleVerify2FALogin({ challengeToken, code }, env, request) {
     if (!user || !user.totp_secret) return json({ error: 'Invalid challenge' }, 400, request);
 
     const valid = await verifyTOTP(user.totp_secret, code);
-    if (!valid) return json({ error: 'Invalid 2FA code' }, 401, request);
+    if (!valid) {
+        // Rate limit: increment attempt counter on the challenge
+        try {
+            await env.DB.prepare('UPDATE two_factor_challenges SET attempts = COALESCE(attempts, 0) + 1 WHERE id = ?').bind(challengeToken).run();
+        } catch { /* column may not exist */ }
+        return json({ error: 'Invalid 2FA code' }, 401, request);
+    }
 
     // Delete challenge
     await env.DB.prepare('DELETE FROM two_factor_challenges WHERE id = ?').bind(challengeToken).run();
 
-    // Create full session
+    // Create full session (7 day expiry)
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     await env.DB.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').bind(token, user.id, expiresAt).run();
 
     await audit(env, request, '2fa_verified', user.id, user.email, null);

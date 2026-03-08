@@ -32,10 +32,12 @@ async function request(path, opts = {}) {
         ...opts,
     });
 
-    // If 401, clear token and redirect to login
+    // If 401, clear token, cached data, and redirect to login
     if (res.status === 401) {
         setToken(null);
         localStorage.removeItem('p3d_user');
+        // Clear cached API data (security: prevent stale data on shared devices)
+        if ('caches' in window) caches.delete('pipeline3d-v3-api').catch(() => { });
         window.dispatchEvent(new Event('p3d-logout'));
         throw new Error('Session expired. Please log in again.');
     }
@@ -72,6 +74,8 @@ export async function logout() {
     } catch { /* ignore logout errors */ }
     setToken(null);
     localStorage.removeItem('p3d_user');
+    // Clear cached API data (security: prevent data leakage on shared devices / PWA)
+    if ('caches' in window) caches.delete('pipeline3d-v3-api').catch(() => { });
 }
 
 export async function verifySession() {
@@ -247,8 +251,7 @@ export async function verify2FALogin(challengeToken, code) {
     return data;
 }
 
-// ─── AI Email (Gemini) ─────────────────────────────────────
-const GEMINI_KEY = 'AIzaSyAlM3SYPTt7iqRCZTjb7axvg_S5se4Q2_8';
+// ─── AI Email (Gemini via server-side proxy) ───────────────
 
 export async function aiDraftEmail(prompt, context = {}) {
     const systemPrompt = `You are a professional sales email writer for 3D Technology Services Inc. (3DTSI), a low-voltage systems integrator specializing in Structured Cabling, CCTV, DAS, Access Control, Audio Visual, Intrusion, Fire Alarm, and Security Systems.
@@ -265,16 +268,15 @@ Context:
 Return ONLY a JSON object with "subject" and "body" keys. No markdown, no code fences.`;
 
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+        const data = await request('/ai', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: systemPrompt + '\n\nUser request: ' + prompt }] }],
-                generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+                prompt: 'User request: ' + prompt,
+                systemPrompt,
+                maxTokens: 1024,
             }),
         });
-        const data = await res.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const text = data?.text || '';
         // Parse JSON from response (handle potential markdown fences)
         const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         return JSON.parse(clean);
@@ -282,3 +284,4 @@ Return ONLY a JSON object with "subject" and "body" keys. No markdown, no code f
         throw new Error('AI drafting failed: ' + e.message);
     }
 }
+

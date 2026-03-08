@@ -2,19 +2,22 @@ import { useState, useMemo } from 'react';
 import { fmt } from '../utils.js';
 import * as api from '../api.js';
 
-const GEMINI_KEY = 'AIzaSyAlM3SYPTt7iqRCZTjb7axvg_S5se4Q2_8';
-
 async function askGemini(prompt, maxTokens = 2048) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+    const token = localStorage.getItem('p3d_auth_token') || '';
+    const res = await fetch('/api/ai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: maxTokens },
-        }),
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ prompt, maxTokens }),
     });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'AI request failed');
+    }
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return data?.text || '';
 }
 
 // ─── Local scoring engine (instant, no API) ─────────────────

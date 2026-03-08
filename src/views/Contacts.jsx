@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import * as api from '../api.js';
-import { exportCSV } from '../utils.js';
+import { exportCSV, uid } from '../utils.js';
 
 const TRADE_TAGS = [
     { label: 'GC', color: '#3b82f6' },
@@ -32,7 +32,7 @@ export default function Contacts({ contacts, companies, toast, refreshContacts }
         e.preventDefault();
         const fd = new FormData(e.target);
         const contact = {
-            id: Date.now(),
+            id: uid(),
             name: fd.get('name'),
             email: fd.get('email'),
             phone: fd.get('phone'),

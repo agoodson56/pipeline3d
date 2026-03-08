@@ -7,16 +7,16 @@ const ALLOWED_ORIGINS = [
 
 /**
  * Build CORS headers, restricting to known origins.
- * In development (localhost), allow the requesting origin.
+ * In development (when ALLOW_DEV_CORS env var is set), allow localhost origins.
  */
-export function corsHeaders(request) {
+export function corsHeaders(request, env) {
   const origin = request?.headers?.get('Origin') || '';
   let allowedOrigin = ALLOWED_ORIGINS[0]; // default
 
   if (ALLOWED_ORIGINS.includes(origin)) {
     allowedOrigin = origin;
-  } else if (origin.startsWith('http://localhost:') || origin === 'http://localhost') {
-    allowedOrigin = origin; // allow dev
+  } else if (env?.ALLOW_DEV_CORS && (origin.startsWith('http://localhost:') || origin === 'http://localhost')) {
+    allowedOrigin = origin; // allow dev only when explicitly enabled
   }
 
   return {
@@ -26,6 +26,7 @@ export function corsHeaders(request) {
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
     'X-Content-Type-Options': 'nosniff',
+    'Vary': 'Origin',
   };
 }
 

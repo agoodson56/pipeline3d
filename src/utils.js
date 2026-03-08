@@ -5,6 +5,9 @@
 export const fmt = (n) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
+/** Generate a unique ID using crypto.randomUUID (collision-safe, no timestamp leakage) */
+export const uid = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+
 /**
  * Export an array of objects as a CSV file download.
  * @param {Object[]} data - Array of flat objects

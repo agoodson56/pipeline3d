@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import * as api from '../api.js';
+import { uid } from '../utils.js';
 
 const TEMPLATES = [
     { id: 'intro', name: 'Introduction', subject: 'Introduction — 3D Technology Services Inc. & {company}', body: 'Hi {contact},\n\nI wanted to introduce myself — I\'m reaching out from 3D Technology Services Inc. I\'d love to share how we can help {company} achieve its technology goals.\n\nWould you be available for a quick call this week to discuss?\n\nBest regards,\n3D Technology Services Inc.\nhttps://3dtsi.com' },
@@ -81,7 +82,7 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
 
         // Log the email in Pipeline3D for tracking
         const emailLog = {
-            id: Date.now(),
+            id: uid(),
             dealId: deals.find(d => d.title === draftDeal)?.id || null,
             dealTitle: draftDeal || '',
             dealStage: deals.find(d => d.title === draftDeal)?.stage || '',
