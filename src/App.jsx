@@ -566,7 +566,7 @@ function App() {
       )}
 
       {/* Click outside user menu to close */}
-      {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowUserMenu(false)} />}
+      {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowUserMenu(false)} />}
 
       {/* Force Password Change Modal */}
       {showForceChangePw && (
