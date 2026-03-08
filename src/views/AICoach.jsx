@@ -55,6 +55,7 @@ export default function AICoach({ deals, contacts, companies, activities, toast 
     const [askPrompt, setAskPrompt] = useState('');
     const [askResponse, setAskResponse] = useState('');
     const [proposalDraft, setProposalDraft] = useState('');
+    const [rfpDraft, setRfpDraft] = useState('');
     const [winLossAnalysis, setWinLossAnalysis] = useState('');
     const [leadScores, setLeadScores] = useState('');
 
@@ -176,6 +177,78 @@ Make it professional and ready to be customized by the rep. Use the deal title t
             toast('📄 Proposal draft generated!');
         } catch (e) {
             setProposalDraft('⚠️ ' + e.message);
+        }
+        setAiLoading(false);
+    };
+
+    // ─── Generate RFP Response ───────────────────────────────
+    const handleGenerateRFP = async (deal) => {
+        setAiLoading(true);
+        setRfpDraft('');
+        try {
+            const prompt = `You are a technical project manager and estimator for 3D Technology Services Inc. (3DTSI), a licensed low-voltage systems integrator. Draft a professional RFP (Request for Proposal) technical response for:
+
+Project: "${deal.title}"
+Client: ${deal.company || 'the client'}
+Contact: ${deal.contact || 'N/A'}
+Estimated Value: $${deal.value?.toLocaleString() || 'TBD'}
+
+Infer the trade/scope from the project title. Generate the following sections:
+
+**1. Technical Understanding & Approach**
+Demonstrate understanding of the project requirements. Reference the specific trade (Structured Cabling, CCTV, DAS, Access Control, AV, Intrusion, Fire Alarm, or Security Systems). Describe the approach.
+
+**2. Scope of Work**
+Detailed technical scope with bullet points. Include:
+• Equipment and materials
+• Installation methodology
+• Testing and commissioning
+• Documentation and as-builts
+• Training for end users
+
+**3. Applicable Standards & Compliance**
+List ALL applicable standards for this trade:
+• BICSI (if cabling)
+• NFPA 72 (if fire alarm)
+• NEC / NFPA 70
+• UL listings
+• ADA compliance (if access control)
+• Local AHJ requirements
+• OSHA safety requirements
+• Relevant manufacturer certifications
+
+**4. Compliance Matrix**
+Create a table showing RFP requirement → 3DTSI compliance status (Compliant / Exceeds / Exception). Include at least 8 rows.
+
+**5. Project Team & Qualifications**
+• Project Manager
+• Lead Technician(s)
+• Relevant certifications (BICSI RCDD, NICET, manufacturer certs)
+• Bonding and insurance
+
+**6. Project Schedule**
+Phased timeline with milestones:
+• Mobilization
+• Rough-in
+• Trim-out
+• Testing & commissioning
+• Closeout & documentation
+
+**7. Warranty & Support**
+• Manufacturer warranties
+• 3DTSI labor warranty
+• Post-project support plan
+
+**8. Differentiators**
+Why choose 3DTSI over competitors (3-4 bullet points).
+
+Make it professional, technically detailed, and ready to customize. Use the deal title to determine the correct trade and tailor everything accordingly.`;
+
+            const result = await askGemini(prompt, 3500);
+            setRfpDraft(result);
+            toast('📋 RFP response drafted!');
+        } catch (e) {
+            setRfpDraft('⚠️ ' + e.message);
         }
         setAiLoading(false);
     };
@@ -350,11 +423,16 @@ Be specific to the low-voltage/systems integration industry.`;
                         {selectedDeal && !analyzing && (
                             <>
                                 <div className="chart-card" style={{ marginBottom: 16 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
                                         <div className="chart-card-title" style={{ margin: 0 }}>🧠 AI Analysis — {selectedDeal.title}</div>
-                                        <button className="btn btn-primary btn-sm" disabled={aiLoading} onClick={() => handleGenerateProposal(selectedDeal)}>
-                                            {aiLoading ? '⏳' : '📄'} Generate Proposal
-                                        </button>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <button className="btn btn-primary btn-sm" disabled={aiLoading} onClick={() => handleGenerateProposal(selectedDeal)}>
+                                                {aiLoading ? '⏳' : '📄'} Proposal
+                                            </button>
+                                            <button className="btn btn-sm" disabled={aiLoading} onClick={() => handleGenerateRFP(selectedDeal)} style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', border: 'none' }}>
+                                                {aiLoading ? '⏳' : '📋'} RFP Response
+                                            </button>
+                                        </div>
                                     </div>
                                     <div style={{ textAlign: 'center', marginBottom: 16 }}>
                                         <div style={{ width: 80, height: 80, borderRadius: '50%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, border: `3px solid ${gradeColor[selectedDeal.ai.grade]}`, color: gradeColor[selectedDeal.ai.grade], background: gradeColor[selectedDeal.ai.grade] + '11' }}>
@@ -393,6 +471,19 @@ Be specific to the low-voltage/systems integration industry.`;
                                         </div>
                                         <div style={{ background: 'var(--bg-surface)', padding: 16, borderRadius: 12, border: '1px solid var(--border)', maxHeight: 500, overflowY: 'auto' }}>
                                             {renderMarkdown(proposalDraft)}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* RFP Response Draft */}
+                                {rfpDraft && (
+                                    <div className="chart-card" style={{ marginTop: 16 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                            <div className="chart-card-title" style={{ margin: 0 }}>📋 RFP Technical Response — {selectedDeal.title}</div>
+                                            <button className="btn btn-ghost btn-sm" onClick={() => { navigator.clipboard.writeText(rfpDraft); toast('📋 RFP response copied!'); }}>📋 Copy</button>
+                                        </div>
+                                        <div style={{ background: 'var(--bg-surface)', padding: 16, borderRadius: 12, border: '1px solid var(--border)', maxHeight: 500, overflowY: 'auto' }}>
+                                            {renderMarkdown(rfpDraft)}
                                         </div>
                                     </div>
                                 )}
