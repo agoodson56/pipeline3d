@@ -1,5 +1,202 @@
 import { useState } from 'react';
 
+const GUIDE_SECTIONS = [
+    {
+        title: '🚀 Getting Started',
+        content: [
+            { heading: 'Logging In', text: '1. Open your browser and go to your Pipeline3D URL\n2. Enter the email and password your admin gave you\n3. Click Sign In — you\'ll land on the Dashboard' },
+            { heading: 'Sidebar Navigation', text: 'The sidebar has three sections:\n• Main — Dashboard, Pipeline, Contacts, Companies, Activities\n• Insights — Calendar, Forecast, Reports, Email\n• Tools — AI Coach, Automations, Sequences, Integrations, Lead Capture, Prospector, Data Import, Help Center, Settings\n\nAt the bottom of the sidebar, click your name to see your profile or sign out.' },
+            { heading: 'What Can I See?', text: '🔒 Deals, Activities, Emails — only YOUR data (private to each rep)\n👥 Contacts & Companies — shared across the whole team (prevents duplicates)' },
+            { heading: 'Install on Mobile', text: 'iPhone: tap Share → "Add to Home Screen"\nAndroid: tap ⋮ menu → "Install app"\nThe app works offline and opens full-screen like a native app.' },
+        ]
+    },
+    {
+        title: '📊 Dashboard — Your Daily Snapshot',
+        content: [
+            { heading: 'KPI Cards', text: 'The top row shows 4 key numbers:\n• Total Pipeline Value — sum of all your active deals\n• Active Deals — how many deals you\'re working\n• Won Revenue — deals you\'ve closed\n• Activities Due — pending tasks that need attention' },
+            { heading: 'Charts', text: 'Below the KPIs:\n• Revenue by Stage — see where your money sits\n• Deal Labels — Hot / Warm / Cold breakdown\n• Recent Activity — latest actions in your pipeline\n\n💡 Tip: Check your Dashboard every morning to plan your day.' },
+        ]
+    },
+    {
+        title: '🔀 Pipeline — Managing Your Deals',
+        content: [
+            { heading: 'Pipeline Stages', text: 'Default stages:\n• Lead In — new opportunity, not yet contacted\n• Contacted — initial conversation done\n• Proposal — quote or proposal sent\n• Negotiation — discussing terms\n• Won 🎉 — deal closed!' },
+            { heading: 'Adding a New Deal', text: '1. Click the green + Add Deal button\n2. Fill in: Title, Value ($), Stage, Contact, Company, Probability (%), Label (Hot/Warm/Cold), Expected Close\n3. Click Create Deal\n\nYour deal card appears on the Kanban board!' },
+            { heading: 'Moving Deals (Drag & Drop)', text: '• Click and hold a deal card\n• Drag it to the new stage column\n• Release to drop it\n\nOr click a deal → Details tab → use the stage buttons under "Move to Stage"' },
+            { heading: 'Deal Detail Tabs', text: 'Click any deal card to see:\n• Details — value, stage, contact, probability, days open\n• Products — add line items (name, qty, price) — auto-calculates total\n• Notes — add timestamped notes (press Enter or click Add)\n• History — automatic timeline of all changes' },
+            { heading: 'Deal Age Warning', text: 'Deals show colored age badges:\n🟢 Under 14 days — fresh\n🟡 14-30 days — starting to age\n🟠 30-60 days — needs attention\n🔴 60+ days — critical, take action now!' },
+            { heading: 'Export', text: 'Click ⬇ Export CSV at the top to download all your deals as a spreadsheet.' },
+        ]
+    },
+    {
+        title: '👥 Contacts — Your People',
+        content: [
+            { heading: 'Adding a Contact', text: '1. Click + Add Contact\n2. Fill in: Name (required), Email, Phone (Office), 📱 Mobile Phone, Company, Role, Tags\n3. Click Add Contact\n\n💡 Tags help you categorize: "decision-maker", "technical", "champion"' },
+            { heading: 'Searching', text: 'Use the 🔍 search bar — it searches by name, email, company, and mobile number.' },
+            { heading: 'Viewing Details', text: 'Click any row to see full contact info including both Phone and Mobile numbers.' },
+            { heading: 'Export', text: 'Click ⬇ CSV to download all contacts as a spreadsheet (includes Mobile column).' },
+        ]
+    },
+    {
+        title: '🏢 Companies — Your Accounts',
+        content: [
+            { heading: 'Adding a Company', text: '1. Click + Add Company\n2. Fill in: Name (required), Industry, Website, Size, Country, Notes\n3. Click Add Company\n\nEach company card shows associated deals and their total value.' },
+        ]
+    },
+    {
+        title: '✅ Activities — Stay On Track',
+        content: [
+            { heading: 'Adding an Activity', text: '1. Click + Add Activity\n2. Fill in: Title, Type (📞 Call, 📧 Email, 🤝 Meeting, 📋 Task), Priority (High/Medium/Low), Due, Due Date, Related Deal\n3. Click Add Activity' },
+            { heading: 'Completing', text: 'Click the checkbox ✓ on the left to mark done. Click again to reopen.' },
+            { heading: 'Filtering', text: 'Use the filter chips: All, Pending, or Completed.' },
+        ]
+    },
+    {
+        title: '📅 Calendar — Week View',
+        content: [
+            { heading: 'How It Works', text: 'Shows your activities plotted on a weekly calendar grid.\nUse it to see what\'s coming up, spot gaps in your schedule, and plan your time visually.' },
+        ]
+    },
+    {
+        title: '📈 Forecast — Revenue Projections',
+        content: [
+            { heading: 'What You See', text: '• Weighted Pipeline — deal values × probability\n• Expected Revenue by Month — when deals are projected to close\n• Pipeline Coverage — how much pipeline you need vs. your target\n\nThis helps you see if you\'re on track to hit your quota.' },
+        ]
+    },
+    {
+        title: '📉 Reports — Performance Metrics',
+        content: [
+            { heading: 'Available Reports', text: '• Deals Won vs. Lost over time\n• Average Deal Size\n• Sales Cycle Length — how long deals take to close\n• Stage Conversion Rates — where deals get stuck\n• Top Performing Deals' },
+        ]
+    },
+    {
+        title: '📧 Email — Compose & Track',
+        content: [
+            { heading: 'Composing', text: '1. Go to Email in the sidebar\n2. Fill in recipient, subject, and body\n3. Click Send' },
+            { heading: 'Tracking', text: 'The Email Tracking tab shows all emails sent, open/click tracking, and engagement scores for each contact.' },
+        ]
+    },
+    {
+        title: '📨 Email Sequences — Automated Follow-ups',
+        content: [
+            { heading: 'Preset Sequences', text: '• New Lead Nurture — welcome emails + follow-ups over 15 days\n• Proposal Follow-Up — check-in after sending a proposal\n• Re-Engagement — reach out to cold leads' },
+            { heading: 'Creating a Custom Sequence', text: '1. Click + New Sequence\n2. Name your sequence\n3. Add steps: Email or Task, with the day number\n4. Fill in subject/template\n5. Click Create Sequence' },
+        ]
+    },
+    {
+        title: '🧠 AI Coach — Smart Deal Scoring',
+        content: [
+            { heading: 'How It Works', text: 'AI Coach analyzes your deals based on: deal value, probability, how long it\'s been open, whether it has a contact and company, stage progression, and note count.' },
+            { heading: 'Using It', text: '1. Go to AI Coach in the sidebar\n2. Click Analyze next to any deal\n3. You\'ll see a score (1-100) and specific recommendations like "Add a contact" or "This deal is aging, schedule a follow-up"\n\n💡 Check the AI Coach weekly. Focus on deals with low scores.' },
+        ]
+    },
+    {
+        title: '⚡ Automations',
+        content: [
+            { heading: 'Create an Automation', text: '1. Go to Automations\n2. Click + New Automation\n3. Set the Trigger (when something happens)\n4. Set the Action (what should happen)\n5. Save and activate\n\nExamples: auto-assign activities when a deal is created, send notification when a deal is Won.' },
+        ]
+    },
+    {
+        title: '🧲 Lead Capture — Web Forms',
+        content: [
+            { heading: 'How It Works', text: '1. Go to Lead Capture\n2. Browse form templates or create a custom form\n3. Customize the fields\n4. Copy the embed code for your website\n\nWhen someone fills out the form, they\'re auto-added as a contact in Pipeline3D.' },
+        ]
+    },
+    {
+        title: '🎯 Prospector — Find New Leads',
+        content: [
+            { heading: 'Tools Available', text: '• Lead Finder — search for leads by industry, location, company size\n• AI Chatbot — helps you craft outreach messages\n• Live Chat — engage with website visitors in real-time' },
+        ]
+    },
+    {
+        title: '📥 Data Import — Upload Your Contacts',
+        content: [
+            { heading: 'From Outlook', text: '1. In Outlook: File → Open & Export → Import/Export\n2. Select "Export to a file" → CSV\n3. Choose your Contacts folder → save the .csv file\n4. In Pipeline3D: go to Data Import (📥 in sidebar)\n5. Click 📂 Choose CSV File\n6. Auto-detected columns: First Name + Last Name → Name, E-mail Address → Email, Business Phone → Phone, Mobile Phone → Mobile, Company → Company, Job Title → Role\n7. Review the mapping, preview the data\n8. Click 📥 Import Contacts — done!' },
+            { heading: 'From Excel or Google Sheets', text: '1. Make sure Row 1 has column headers (Name, Email, Phone, Mobile, Company, etc.)\n2. File → Save As → CSV format\n3. Upload the .csv file in Data Import' },
+            { heading: 'After Importing', text: '• Go to the 🔄 Duplicates tab to check for and merge duplicate contacts\n• Go to the ✨ AI Enrichment tab to auto-fill missing company and role data from email addresses\n\n💡 Contacts are shared with the whole team. Duplicate emails are automatically skipped during import.' },
+        ]
+    },
+    {
+        title: '⚙️ Settings',
+        content: [
+            { heading: 'Your Profile', text: 'Click your name at the bottom of the sidebar to view your profile or sign out.' },
+            { heading: 'Settings Page', text: '• General — app preferences\n• Pipelines — customize stages, add new pipelines\n• Users (admin only) — manage the sales team, add/remove reps' },
+        ]
+    },
+    {
+        title: '💡 Tips & Best Practices',
+        content: [
+            { heading: 'Daily Routine', text: '1. Morning: Check Dashboard → see Activities Due\n2. Before each call: Open the deal → review Notes and History\n3. After each call: Add a Note → create a follow-up Activity\n4. End of day: Move deals to correct stage → mark Activities complete' },
+            { heading: 'Deal Management', text: '🔥 Label hot deals so you can focus on them\n📝 Add notes after every interaction\n📦 Add products/line items to track exactly what you\'re selling\n⏱️ Watch the age indicator — red means take action now' },
+            { heading: 'Contact Management', text: '📱 Always add mobile phone — fastest way to reach people\n🏷️ Use tags: "decision-maker", "technical", "champion"\n🏢 Link contacts to companies for better reporting' },
+            { heading: 'First Day Setup', text: '📥 Import your Outlook contacts on Day 1\n🔄 Check for duplicates after importing\n✨ Run AI Enrichment to fill missing company/role data\n⌨️ Use Ctrl+K for quick navigation' },
+        ]
+    },
+];
+
+function UserGuide() {
+    const [openSections, setOpenSections] = useState({ 0: true });
+
+    const toggle = (i) => setOpenSections(s => ({ ...s, [i]: !s[i] }));
+
+    const printGuide = () => {
+        const w = window.open('', '_blank');
+        let html = `<html><head><title>Pipeline3D User Guide</title><style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.7; }
+            h1 { font-size: 28px; border-bottom: 3px solid #D4A017; padding-bottom: 8px; }
+            h2 { font-size: 20px; margin-top: 32px; color: #0D9488; }
+            h3 { font-size: 15px; margin-top: 16px; font-weight: 600; }
+            p, li { font-size: 13px; }
+            .section { page-break-inside: avoid; margin-bottom: 24px; }
+            @media print { body { margin: 20px; } }
+        </style></head><body><h1>📖 Pipeline3D — Sales Team User Guide</h1><p style="color:#666">3D Technology Services · March 2026</p>`;
+        GUIDE_SECTIONS.forEach(sec => {
+            html += `<div class="section"><h2>${sec.title}</h2>`;
+            sec.content.forEach(item => {
+                html += `<h3>${item.heading}</h3>`;
+                html += `<p>${item.text.replace(/\n/g, '<br>')}</p>`;
+            });
+            html += `</div>`;
+        });
+        html += `</body></html>`;
+        w.document.write(html);
+        w.document.close();
+        setTimeout(() => w.print(), 500);
+    };
+
+    return (
+        <div>
+            <div className="section-header" style={{ marginBottom: 20 }}>
+                <div>
+                    <h3 style={{ margin: 0 }}>Pipeline3D — Sales Team User Guide</h3>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0' }}>Complete step-by-step instructions for every feature</p>
+                </div>
+                <button className="btn btn-ghost" onClick={printGuide}>🖨️ Print / Save PDF</button>
+            </div>
+
+            {GUIDE_SECTIONS.map((sec, i) => (
+                <div className="chart-card" key={i} style={{ marginBottom: 8 }}>
+                    <div onClick={() => toggle(i)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: '2px 0' }}>
+                        <span style={{ fontSize: 15, fontWeight: 600 }}>{sec.title}</span>
+                        <span style={{ fontSize: 18, color: 'var(--text-muted)', transition: 'transform 0.2s', transform: openSections[i] ? 'rotate(180deg)' : 'rotate(0)' }}>▾</span>
+                    </div>
+                    {openSections[i] && (
+                        <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                            {sec.content.map((item, j) => (
+                                <div key={j} style={{ marginBottom: 16 }}>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', marginBottom: 4 }}>{item.heading}</div>
+                                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-line', lineHeight: 1.8 }}>{item.text}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+
 const KB_ARTICLES = [
     { id: 1, category: 'Getting Started', title: 'How to create your first deal', content: 'Navigate to Pipeline → Click + Add Deal → Fill in deal title, value, stage, and contact → Click Create Deal. Your deal will appear as a card in the Kanban board.' },
     { id: 2, category: 'Getting Started', title: 'Understanding your Dashboard', content: 'The Dashboard shows 4 KPI cards: Pipeline Value, Won Revenue, Weighted Forecast, and Win Rate. Below are Stage Distribution charts and Recent Deals. Check this daily for a pulse on your sales performance.' },
@@ -24,7 +221,7 @@ const KB_ARTICLES = [
 const STATUS_COLORS = { open: '#f59e0b', 'in-progress': '#3b82f6', resolved: '#10b981' };
 
 export default function HelpCenter({ toast }) {
-    const [tab, setTab] = useState('kb');
+    const [tab, setTab] = useState('guide');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [tickets, setTickets] = useState([
@@ -69,6 +266,7 @@ export default function HelpCenter({ toast }) {
     return (
         <div>
             <div className="detail-tabs" style={{ marginBottom: 20 }}>
+                <button className={`detail-tab ${tab === 'guide' ? 'active' : ''}`} onClick={() => setTab('guide')}>📖 User Guide</button>
                 <button className={`detail-tab ${tab === 'kb' ? 'active' : ''}`} onClick={() => setTab('kb')}>📚 Knowledge Base</button>
                 <button className={`detail-tab ${tab === 'tickets' ? 'active' : ''}`} onClick={() => setTab('tickets')}>
                     🎫 Support Tickets {tickets.filter(t => t.status !== 'resolved').length > 0 && `(${tickets.filter(t => t.status !== 'resolved').length})`}
@@ -76,6 +274,8 @@ export default function HelpCenter({ toast }) {
                 <button className={`detail-tab ${tab === 'status' ? 'active' : ''}`} onClick={() => setTab('status')}>📡 System Status</button>
                 <button className={`detail-tab ${tab === 'sla' ? 'active' : ''}`} onClick={() => setTab('sla')}>📋 SLA & Terms</button>
             </div>
+
+            {tab === 'guide' && <UserGuide />}
 
             {tab === 'kb' && (
                 <div>
