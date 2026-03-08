@@ -63,7 +63,7 @@ export default function CalendarView({ activities }) {
                             <div className="calendar-day-num">{d.day}</div>
                             {events.slice(0, 3).map((ev, j) => (
                                 <div key={j} className="calendar-event"
-                                    style={{ background: (typeColors[ev.type] || '#6366f1') + '22', color: typeColors[ev.type] || '#6366f1' }}>
+                                    style={{ background: (typeColors[ev.type] || '#0D9488') + '22', color: typeColors[ev.type] || '#0D9488' }}>
                                     {ev.title}
                                 </div>
                             ))}

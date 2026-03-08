@@ -101,8 +101,8 @@ export default function EmailSequences({ toast }) {
                                         <div style={{ width: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                                             <div style={{
                                                 width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                background: step.type === 'email' ? 'rgba(99,102,241,0.2)' : 'rgba(245,158,11,0.2)',
-                                                color: step.type === 'email' ? '#6366f1' : '#f59e0b', fontSize: 14, zIndex: 1
+                                                background: step.type === 'email' ? 'rgba(13,148,136,0.2)' : 'rgba(245,158,11,0.2)',
+                                                color: step.type === 'email' ? '#0D9488' : '#f59e0b', fontSize: 14, zIndex: 1
                                             }}>
                                                 {step.type === 'email' ? '✉' : '✅'}
                                             </div>

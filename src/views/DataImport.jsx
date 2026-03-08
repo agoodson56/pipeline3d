@@ -250,7 +250,7 @@ export default function DataImport({ contacts, toast, refreshContacts, refreshDe
                                                             <span className="tag" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>🏢 {enriched.company}</span>
                                                         )}
                                                         {enriched.role && enriched.role !== c.role && (
-                                                            <span className="tag" style={{ background: 'rgba(99,102,241,0.15)', color: '#6366f1' }}>👤 {enriched.role}</span>
+                                                            <span className="tag" style={{ background: 'rgba(13,148,136,0.15)', color: '#0D9488' }}>👤 {enriched.role}</span>
                                                         )}
                                                         {enriched.website && (
                                                             <span className="tag" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>🌐 {enriched.website}</span>

@@ -91,7 +91,7 @@ export default function Prospector({ toast, contacts }) {
     const [chatbotConfig, setChatbotConfig] = useState({
         greeting: '👋 Hi there! How can I help you today?',
         name: '3D TSI Assistant',
-        color: '#6366f1',
+        color: '#0D9488',
         captureEmail: true,
         capturePhone: false,
         autoQualify: true,
@@ -483,7 +483,7 @@ export default function Prospector({ toast, contacts }) {
                                         <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'visitor' ? 'flex-start' : 'flex-end' }}>
                                             <div style={{
                                                 maxWidth: '70%', padding: '10px 14px', borderRadius: 12,
-                                                background: msg.from === 'visitor' ? 'var(--bg-hover)' : '#6366f1',
+                                                background: msg.from === 'visitor' ? 'var(--bg-hover)' : '#0D9488',
                                                 color: msg.from === 'visitor' ? 'var(--text-primary)' : '#fff',
                                                 fontSize: 13, lineHeight: 1.5
                                             }}>

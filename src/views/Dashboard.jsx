@@ -51,7 +51,7 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
         activities.filter(a => !a.done).sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0)).slice(0, 5)
         , [activities]);
 
-    const colors = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444'];
+    const colors = ['#0D9488', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ef4444'];
 
     return (
         <div>
@@ -69,7 +69,7 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
                 </div>
                 <div className="kpi-card">
                     <div className="kpi-label">Weighted Forecast</div>
-                    <div className="kpi-value" style={{ color: '#a5b4fc' }}>{fmt(stats.weighted)}</div>
+                    <div className="kpi-value" style={{ color: '#5EEAD4' }}>{fmt(stats.weighted)}</div>
                     <div className="kpi-sub">Probability-adjusted</div>
                 </div>
                 <div className="kpi-card">
@@ -116,7 +116,7 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
             <div className="chart-card" style={{ marginTop: 16, padding: '12px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>🎯 Monthly Quota Progress</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: stats.quotaPct >= 100 ? '#10b981' : '#a5b4fc' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: stats.quotaPct >= 100 ? '#10b981' : '#5EEAD4' }}>
                         {fmt(stats.wonValue)} / {fmt(stats.quota)} ({stats.quotaPct}%)
                     </span>
                 </div>

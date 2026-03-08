@@ -141,14 +141,14 @@ export default function Automations({ toast }) {
             <div key={i}>
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px',
-                    background: isCondition ? 'rgba(245,158,11,0.08)' : 'rgba(99,102,241,0.08)',
-                    border: `1px solid ${isCondition ? 'rgba(245,158,11,0.3)' : 'rgba(99,102,241,0.3)'}`,
+                    background: isCondition ? 'rgba(245,158,11,0.08)' : 'rgba(13,148,136,0.08)',
+                    border: `1px solid ${isCondition ? 'rgba(245,158,11,0.3)' : 'rgba(13,148,136,0.3)'}`,
                     borderRadius: 'var(--radius-md)',
-                    borderLeft: `3px solid ${isCondition ? '#f59e0b' : '#6366f1'}`,
+                    borderLeft: `3px solid ${isCondition ? '#f59e0b' : '#0D9488'}`,
                 }}>
                     <span style={{ fontSize: 16 }}>{isCondition ? condDef?.icon || '❓' : actDef?.icon || '⚡'}</span>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: isCondition ? '#f59e0b' : '#6366f1', letterSpacing: 0.5 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: isCondition ? '#f59e0b' : '#0D9488', letterSpacing: 0.5 }}>
                             {isCondition ? `IF / CONDITION #${i + 1}` : `ACTION #${i + 1}`}
                         </div>
                         <div style={{ fontSize: 13, fontWeight: 500, marginTop: 1 }}>
@@ -265,9 +265,9 @@ export default function Automations({ toast }) {
                                 {newRule.steps.map((step, i) => (
                                     <div key={i} style={{
                                         display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, padding: 8, background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
-                                        borderLeft: `3px solid ${step.type === 'condition' ? '#f59e0b' : '#6366f1'}`
+                                        borderLeft: `3px solid ${step.type === 'condition' ? '#f59e0b' : '#0D9488'}`
                                     }}>
-                                        <span style={{ fontSize: 10, fontWeight: 700, color: step.type === 'condition' ? '#f59e0b' : '#6366f1', width: 20, textAlign: 'center' }}>
+                                        <span style={{ fontSize: 10, fontWeight: 700, color: step.type === 'condition' ? '#f59e0b' : '#0D9488', width: 20, textAlign: 'center' }}>
                                             {step.type === 'condition' ? 'IF' : '#' + (i + 1)}
                                         </span>
                                         {step.type === 'condition' ? (
@@ -288,7 +288,7 @@ export default function Automations({ toast }) {
                                     </div>
                                 ))}
                                 <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                                    <button className="btn btn-ghost btn-sm" style={{ borderColor: '#6366f1', color: '#6366f1' }} onClick={() => addStep('action')}>+ Add Action</button>
+                                    <button className="btn btn-ghost btn-sm" style={{ borderColor: '#0D9488', color: '#0D9488' }} onClick={() => addStep('action')}>+ Add Action</button>
                                     <button className="btn btn-ghost btn-sm" style={{ borderColor: '#f59e0b', color: '#f59e0b' }} onClick={() => addStep('condition')}>+ Add Condition</button>
                                 </div>
                             </div>
