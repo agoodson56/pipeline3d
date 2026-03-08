@@ -21,7 +21,7 @@ const GUIDE_SECTIONS = [
         title: '🔀 Pipeline — Managing Your Deals',
         content: [
             { heading: 'Pipeline Stages', text: 'Default stages:\n• Lead In — new opportunity, not yet contacted\n• Contact Made — initial conversation done, qualifying the project\n• Site Survey — on-site visit to assess scope, measurements & existing infrastructure\n• Proposal — scope of work and quote sent to the customer\n• Negotiation — discussing terms, pricing & project timeline\n• Won 🎉 — deal closed, project awarded!' },
-            { heading: 'Adding a New Deal', text: '1. Click the green + Add Deal button\n2. Fill in: Title, Value ($), Stage, Contact, Company, Probability (%), Label (Hot/Warm/Cold), Expected Close\n3. Click Create Deal\n\nYour deal card appears on the Kanban board!' },
+            { heading: 'Adding a New Deal', text: '1. Click the green + Add Deal button\n2. Fill in: Title (e.g. "Sacramento Medical Center — Access Control"), Value ($), Stage, Contact, Company, Probability (%), Label (Hot/Warm/Cold), Expected Close\n3. Click Create Deal\n\nYour deal card appears on the Kanban board!\n\n💡 Tip: Use a naming convention: [Customer] — [Service Line] (e.g. "Acme Corp — Structured Cabling")' },
             { heading: 'Moving Deals (Drag & Drop)', text: '• Click and hold a deal card\n• Drag it to the new stage column\n• Release to drop it\n\nOr click a deal → Details tab → use the stage buttons under "Move to Stage"' },
             { heading: 'Deal Detail Tabs', text: 'Click any deal card to see:\n• Details — value, stage, contact, probability, days open\n• Products — add line items (name, qty, price) — auto-calculates total\n• Notes — add timestamped notes (press Enter or click Add)\n• History — automatic timeline of all changes' },
             { heading: 'Deal Age Warning', text: 'Deals show colored age badges:\n🟢 Under 14 days — fresh\n🟡 14-30 days — starting to age\n🟠 30-60 days — needs attention\n🔴 60+ days — critical, take action now!' },
@@ -31,7 +31,7 @@ const GUIDE_SECTIONS = [
     {
         title: '👥 Contacts — Your People',
         content: [
-            { heading: 'Adding a Contact', text: '1. Click + Add Contact\n2. Fill in: Name (required), Email, Phone (Office), 📱 Mobile Phone, Company, Role, Tags\n3. Click Add Contact\n\n💡 Tags help you categorize: "decision-maker", "technical", "champion"' },
+            { heading: 'Adding a Contact', text: '1. Click + Add Contact\n2. Fill in: Name (required), Email, Phone (Office), 📱 Mobile Phone, Company, Role, Tags\n3. Click Add Contact\n\n💡 Tags help you categorize: "decision-maker", "GC", "architect", "facilities-mgr", "end-user"' },
             { heading: 'Searching', text: 'Use the 🔍 search bar — it searches by name, email, company, and mobile number.' },
             { heading: 'Viewing Details', text: 'Click any row to see full contact info including both Phone and Mobile numbers.' },
             { heading: 'Export', text: 'Click ⬇ CSV to download all contacts as a spreadsheet (includes Mobile column).' },
@@ -40,7 +40,7 @@ const GUIDE_SECTIONS = [
     {
         title: '🏢 Companies — Your Accounts',
         content: [
-            { heading: 'Adding a Company', text: '1. Click + Add Company\n2. Fill in: Name (required), Industry, Website, Size, Country, Notes\n3. Click Add Company\n\nEach company card shows associated deals and their total value.' },
+            { heading: 'Adding a Company', text: '1. Click + Add Company\n2. Fill in: Name (required), Industry, Website, Size, Country, Notes\n3. Click Add Company\n\nEach company card shows associated deals and their total value.\n\n💡 For GCs and architects, note which projects they\'re involved in. This helps cross-reference future bid invitations.' },
         ]
     },
     {
@@ -79,7 +79,7 @@ const GUIDE_SECTIONS = [
     {
         title: '📨 Email Sequences — Automated Follow-ups',
         content: [
-            { heading: 'Preset Sequences', text: '• New Lead Nurture — welcome emails + follow-ups over 15 days\n• Proposal Follow-Up — check-in after sending a proposal\n• Re-Engagement — reach out to cold leads' },
+            { heading: 'Preset Sequences', text: '• New Lead Nurture — welcome emails + follow-ups over 21 days, ideal for inbound 3dtsi.com leads\n• Post-Proposal Follow-Up — check-in after sending a scope of work\n• Re-Engagement (Cold Leads) — reach out to leads that went quiet' },
             { heading: 'Creating a Custom Sequence', text: '1. Click + New Sequence\n2. Name your sequence\n3. Add steps: Email or Task, with the day number\n4. Fill in subject/template\n5. Click Create Sequence' },
         ]
     },
@@ -93,7 +93,7 @@ const GUIDE_SECTIONS = [
     {
         title: '⚡ Automations',
         content: [
-            { heading: 'Create an Automation', text: '1. Go to Automations\n2. Click + New Automation\n3. Set the Trigger (when something happens)\n4. Set the Action (what should happen)\n5. Save and activate\n\nExamples: auto-assign activities when a deal is created, send notification when a deal is Won.' },
+            { heading: 'Create an Automation', text: '1. Go to Automations\n2. Click + New Automation\n3. Set the Trigger (when something happens)\n4. Set the Action (what should happen)\n5. Save and activate\n\nExamples:\n• Deal moves to "Site Survey" → auto-create task: "Conduct site survey — measure & document"\n• New deal created → auto-assign follow-up call\n• Deal won → send thank-you email + Slack/Teams notification' },
         ]
     },
     {
@@ -105,7 +105,7 @@ const GUIDE_SECTIONS = [
     {
         title: '🎯 Prospector — Find New Leads',
         content: [
-            { heading: 'Tools Available', text: '• Lead Finder — search for leads by industry, location, company size\n• AI Chatbot — helps you craft outreach messages\n• Live Chat — engage with website visitors in real-time' },
+            { heading: 'Tools Available', text: '• Lead Finder — search for leads by industry (Construction, Healthcare, Education, Government), job title (Facilities Manager, Security Director, IT Director), company size, and region (Sacramento, Bay Area, Houston, etc.)\n• AI Chatbot — deploy on 3dtsi.com to auto-qualify visitors asking about cabling, security, AV, fire alarm projects\n• Live Chat — engage with website visitors in real-time and create leads instantly' },
         ]
     },
     {
@@ -120,15 +120,15 @@ const GUIDE_SECTIONS = [
         title: '⚙️ Settings',
         content: [
             { heading: 'Your Profile', text: 'Click your name at the bottom of the sidebar to view your profile or sign out.' },
-            { heading: 'Settings Page', text: '• General — app preferences\n• Pipelines — customize stages, add new pipelines\n• Users (admin only) — manage the sales team, add/remove reps' },
+            { heading: 'Settings Page', text: '• General — company info (3D Technology Services Inc.), currency, fiscal year\n• Custom Fields — Service Line, Project Type, Lead Source, Bid Due Date, Territory, and more\n• Pipelines — customize stages (Lead In → Contact Made → Site Survey → Proposal → Negotiation → Won)\n• Users (admin only) — manage the sales team, add/remove reps' },
         ]
     },
     {
         title: '💡 Tips & Best Practices',
         content: [
-            { heading: 'Daily Routine', text: '1. Morning: Check Dashboard → see Activities Due\n2. Before each call: Open the deal → review Notes and History\n3. After each call: Add a Note → create a follow-up Activity\n4. End of day: Move deals to correct stage → mark Activities complete' },
-            { heading: 'Deal Management', text: '🔥 Label hot deals so you can focus on them\n📝 Add notes after every interaction\n📦 Add products/line items to track exactly what you\'re selling\n⏱️ Watch the age indicator — red means take action now' },
-            { heading: 'Contact Management', text: '📱 Always add mobile phone — fastest way to reach people\n🏷️ Use tags: "decision-maker", "technical", "champion"\n🏢 Link contacts to companies for better reporting' },
+            { heading: 'Daily Routine', text: '1. Morning: Check Dashboard → see Activities Due and today\'s site surveys\n2. Before each call: Open the deal → review Notes, History, and Service Line\n3. After each call/survey: Add a Note → create a follow-up Activity\n4. End of day: Move deals to correct stage → mark Activities complete' },
+            { heading: 'Deal Management', text: '🔥 Label hot deals so you can focus on them\n📝 Add notes after every interaction and site visit\n📦 Add products/line items to build your scope of work and quote\n🏷️ Always set the Service Line (Security, Cabling, AV, Networking, Fire & Life Safety, Service)\n⏱️ Watch the age indicator — red means take action now\n📐 After a site survey, update the deal value with accurate estimates' },
+            { heading: 'Contact Management', text: '📱 Always add mobile phone — fastest way to reach GCs and facilities managers\n🏷️ Use tags: "decision-maker", "GC", "architect", "facilities-mgr", "end-user"\n🏢 Link contacts to companies for better reporting' },
             { heading: 'First Day Setup', text: '📥 Import your Outlook contacts on Day 1\n🔄 Check for duplicates after importing\n✨ Run AI Enrichment to fill missing company/role data\n⌨️ Use Ctrl+K for quick navigation' },
         ]
     },
@@ -198,22 +198,24 @@ function UserGuide() {
 
 
 const KB_ARTICLES = [
-    { id: 1, category: 'Getting Started', title: 'How to create your first deal', content: 'Navigate to Pipeline → Click + Add Deal → Fill in deal title, value, stage, and contact → Click Create Deal. Your deal will appear as a card in the Kanban board.' },
+    { id: 1, category: 'Getting Started', title: 'How to create your first deal', content: 'Navigate to Pipeline → Click + Add Deal → Fill in deal title (e.g. "Acme Corp — Security System"), value, stage, and contact → Click Create Deal. Your deal will appear as a card in the Kanban board. Tip: use the naming convention [Customer] — [Service Line].' },
     { id: 2, category: 'Getting Started', title: 'Understanding your Dashboard', content: 'The Dashboard shows 4 KPI cards: Pipeline Value, Won Revenue, Weighted Forecast, and Win Rate. Below are Stage Distribution charts and Recent Deals. Check this daily for a pulse on your sales performance.' },
     { id: 3, category: 'Getting Started', title: 'Installing Pipeline3D on your phone', content: 'Android: Open Chrome → visit pipeline3d.pages.dev → tap Install App. iOS: Open Safari → tap Share → Add to Home Screen → Add. The app works offline and opens full-screen.' },
     { id: 4, category: 'Pipeline', title: 'Drag and drop deals between stages', content: 'Click and hold any deal card on the Kanban board. Drag it to the target stage column and release. The deal will be saved in the new stage automatically.' },
     { id: 5, category: 'Pipeline', title: 'Understanding deal rotting indicators', content: 'Deals show age badges: green (<14d fresh), yellow (14-30d aging), orange (30-60d warning), red (60d+ critical with pulsing border). Focus on red deals first — they need immediate action.' },
-    { id: 6, category: 'Pipeline', title: 'Adding products/line items to deals', content: 'Open a deal → click Products tab → enter product name, quantity, unit price → click Add. Products auto-calculate totals and update the deal value. Use this as a quote builder.' },
+    { id: 6, category: 'Pipeline', title: 'Adding products/line items to deals', content: 'Open a deal → click Products tab → enter product name (e.g. "Cat6A Cable Run", "PTZ Camera", "Access Control Reader"), quantity, unit price → click Add. Products auto-calculate totals and update the deal value. Use this as a scope of work and quote builder.' },
     { id: 7, category: 'Contacts', title: 'Importing contacts from CSV', content: 'Go to Data Import → Click Choose CSV File → map columns to CRM fields → preview rows → click Import. Supports: Name, Email, Phone, Company, Role, Tags columns.' },
     { id: 8, category: 'Contacts', title: 'Detecting and merging duplicates', content: 'Go to Data Import → Duplicates tab. The system scans for matching emails. Click Merge All to combine duplicate records, keeping the best data from each.' },
-    { id: 9, category: 'Email', title: 'Setting up email sequences', content: 'Go to Sequences → + New Sequence → name it → add steps (email or task) with day numbers → Create. Pre-built sequences: New Lead Nurture, Post-Proposal Follow-up, Re-Engagement.' },
+    { id: 9, category: 'Email', title: 'Setting up email sequences', content: 'Go to Sequences → + New Sequence → name it → add steps (email or task) with day numbers → Create. Pre-built sequences: New Lead Nurture (21-day drip), Post-Proposal Follow-up, Re-Engagement (Cold Leads).' },
     { id: 10, category: 'Email', title: 'Using the email composer', content: 'Click the purple Compose button (top-right). Choose a template, fill in To/Subject/Body, or click AI Draft for auto-generated content. Link emails to deals for tracking.' },
     { id: 11, category: 'AI & Analytics', title: 'How AI deal scoring works', content: 'AI Coach analyzes 8 factors: value, probability, stage, days open, label, contact assigned, note count, company. Grades: A (80-100%), B (60-79%), C (40-59%), D (0-39%). Follow the specific recommendations for each deal.' },
     { id: 12, category: 'AI & Analytics', title: 'Reading the conversion funnel', content: 'Go to Reports → Conversion Funnel tab. Visual funnel shows stage-to-stage conversion rates and dropoff counts. Focus improvements on the stage with the biggest dropoff.' },
-    { id: 13, category: 'Automations', title: 'Creating automation rules', content: 'Go to Automations → + New Rule → select a trigger (e.g., deal moves to stage) → select an action (e.g., create task) → configure details → Save. Toggle rules on/off anytime.' },
+    { id: 13, category: 'Automations', title: 'Creating automation rules', content: 'Go to Automations → + New Rule → select a trigger (e.g., deal moves to Site Survey) → select an action (e.g., create task: "Conduct site survey") → configure details → Save. Toggle rules on/off anytime.' },
     { id: 14, category: 'Integrations', title: 'Connecting Gmail two-way sync', content: 'Go to Integrations → find Gmail (Two-Way Sync) → click Connect → enter your Google OAuth token. Once connected, all sent/received emails auto-appear on deal cards.' },
     { id: 15, category: 'Integrations', title: 'Setting up webhooks', content: 'Go to Integrations → Webhooks tab → + Add Webhook → enter URL → select events (deal.won, contact.created, etc.). Webhooks fire real-time HTTP POST requests with event data.' },
-    { id: 16, category: 'Settings', title: 'Adding custom fields', content: 'Go to Settings → Custom Fields → + Add Field → choose name, type (text/number/dropdown/date/checkbox), and entity (deals/contacts) → Save. Fields appear in record detail views.' },
+    { id: 16, category: 'Settings', title: 'Adding custom fields', content: 'Go to Settings → Custom Fields → + Add Field → choose name, type (text/number/dropdown/date/checkbox), and entity (deals/contacts/companies) → Save. Pre-configured fields include: Service Line, Project Type, Lead Source, Bid Due Date, Decision Timeline, Territory, and Contract Length.' },
+    { id: 19, category: 'Pipeline', title: 'Using Service Line fields on deals', content: 'Every deal should have a Service Line set: Security Systems, Structured Cabling, Audio & Video Systems, Networking, Fire & Life Safety, or Service & Maintenance. This drives better reporting and helps management see which service lines are generating the most pipeline. Set it when creating the deal or in the deal detail view under Custom Fields.' },
+    { id: 20, category: 'Pipeline', title: 'The Site Survey workflow', content: 'When a deal moves to "Site Survey" stage: 1) An automation auto-creates a task to conduct the survey. 2) Visit the site to measure, document existing infrastructure, and photograph the space. 3) Add notes to the deal about what you found. 4) Update the deal value with your accurate estimate. 5) Add products/line items for the scope of work. 6) Move the deal to "Proposal" when ready to send the quote.' },
     { id: 17, category: 'Troubleshooting', title: 'App not loading on mobile', content: 'Android requires Chrome. iOS requires Safari (not Chrome). Clear browser cache, ensure stable internet. If installed as PWA and broken, delete the home screen icon and reinstall.' },
     { id: 18, category: 'Troubleshooting', title: 'Cannot see pipeline stages', content: 'Ensure at least one pipeline exists in Settings → Pipelines. If empty, the default "Sales Pipeline" should auto-create. Try refreshing the page (Ctrl+Shift+R).' },
 ];
