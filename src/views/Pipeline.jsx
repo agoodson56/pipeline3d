@@ -2,7 +2,16 @@ import { useState, useMemo, useRef } from 'react';
 import * as api from '../api.js';
 import { fmt, exportCSV, uid } from '../utils.js';
 
-export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
+const WIN_REASONS = ['Best Price', 'Scope Fit', 'Relationship', 'Technical Capability', 'Timeline', 'Bundled Services', 'Existing Customer', 'Other'];
+const LOSS_REASONS = ['Price Too High', 'Lost to Competitor', 'Project Cancelled', 'Decision Delayed', 'Went In-House', 'Scope Changed', 'No Response', 'Budget Cut', 'Other'];
+
+function isOverdue(expectedClose) {
+    if (!expectedClose) return false;
+    const d = new Date(expectedClose);
+    return !isNaN(d) && d < new Date(new Date().toDateString());
+}
+
+export default function Pipeline({ deals, pipelines, activities, emails, toast, refreshDeals }) {
     const [activePipeline, setActivePipeline] = useState(null);
     const [showAddDeal, setShowAddDeal] = useState(false);
     const [selectedDeal, setSelectedDeal] = useState(null);
@@ -10,8 +19,22 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     const [noteText, setNoteText] = useState('');
     const [detailTab, setDetailTab] = useState('details');
     const [editForm, setEditForm] = useState(null);
+    const [winLossModal, setWinLossModal] = useState(null); // { deal, stage }
+    const [winLossReason, setWinLossReason] = useState('');
+    const [winLossNote, setWinLossNote] = useState('');
     const dragItem = useRef(null);
     const dragOverStage = useRef(null);
+
+    // Related data for selected deal
+    const dealActivities = useMemo(() => {
+        if (!selectedDeal || !activities) return [];
+        return activities.filter(a => a.deal === selectedDeal.title);
+    }, [selectedDeal, activities]);
+
+    const dealEmails = useMemo(() => {
+        if (!selectedDeal || !emails) return [];
+        return emails.filter(e => e.dealId === selectedDeal.id || e.dealTitle === selectedDeal.title);
+    }, [selectedDeal, emails]);
 
     const currentPipeline = activePipeline || (pipelines.length > 0 ? pipelines[0] : null);
     const stages = useMemo(() => currentPipeline?.stages || [], [currentPipeline]);
@@ -53,6 +76,14 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
         e.currentTarget.classList.remove('drag-over');
         const deal = dragItem.current;
         if (!deal || deal.stage === stageName) return;
+
+        // Intercept Won/Lost moves to capture reason
+        if (stageName === 'Won' || stageName === 'Lost') {
+            setWinLossModal({ deal, stage: stageName });
+            setWinLossReason('');
+            setWinLossNote('');
+            return;
+        }
 
         const updated = {
             ...deal,
@@ -96,6 +127,13 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
     };
 
     const moveDealToStage = async (deal, newStage) => {
+        // Intercept Won/Lost moves to capture reason
+        if (newStage === 'Won' || newStage === 'Lost') {
+            setWinLossModal({ deal, stage: newStage });
+            setWinLossReason('');
+            setWinLossNote('');
+            return;
+        }
         const updated = {
             ...deal, stage: newStage,
             history: [...(deal.history || []), { id: uid(), action: 'stage', detail: `Moved to ${newStage}`, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) }],
@@ -105,6 +143,30 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
             await refreshDeals();
             toast(`Moved to ${newStage}`);
             setSelectedDeal({ ...updated });
+        } catch (err) { toast(err.message, 'error'); }
+    };
+
+    // Win/Loss confirmation with reason
+    const confirmWinLoss = async () => {
+        if (!winLossModal) return;
+        const { deal, stage } = winLossModal;
+        const reasonText = winLossReason || (stage === 'Won' ? 'Won' : 'Lost');
+        const updated = {
+            ...deal,
+            stage,
+            customFields: { ...(deal.customFields || {}), winLossReason: reasonText, winLossNote: winLossNote.trim() },
+            history: [...(deal.history || []), {
+                id: uid(), action: stage === 'Won' ? 'won' : 'lost',
+                detail: `${stage === 'Won' ? '🎉 Won' : '❌ Lost'}: ${reasonText}${winLossNote.trim() ? ' — ' + winLossNote.trim() : ''}`,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            }],
+        };
+        try {
+            await api.saveDeal(updated);
+            await refreshDeals();
+            toast(stage === 'Won' ? '🎉 Deal won!' : 'Deal marked as lost');
+            setSelectedDeal(null);
+            setWinLossModal(null);
         } catch (err) { toast(err.message, 'error'); }
     };
 
@@ -238,7 +300,12 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                         <div className="kanban-card-company">{deal.company || deal.contact || '—'}</div>
                                         <div className="kanban-card-footer">
                                             <div className="kanban-card-value">{fmt(deal.value)}</div>
-                                            <span className={`kanban-card-label label-${deal.label}`}>{deal.label}</span>
+                                            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                                {isOverdue(deal.expectedClose) && (
+                                                    <span style={{ fontSize: 10, background: '#dc2626', color: '#fff', padding: '1px 6px', borderRadius: 4, fontWeight: 600 }} title={`Close date: ${deal.expectedClose}`}>⏰ Overdue</span>
+                                                )}
+                                                <span className={`kanban-card-label label-${deal.label}`}>{deal.label}</span>
+                                            </div>
                                         </div>
                                         {deal.daysOpen > 30 && (
                                             <div className="rot-bar">
@@ -335,6 +402,12 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                 <button className={`detail-tab ${detailTab === 'products' ? 'active' : ''}`} onClick={() => setDetailTab('products')}>
                                     Products {selectedDeal.products?.length > 0 && `(${selectedDeal.products.length})`}
                                 </button>
+                                <button className={`detail-tab ${detailTab === 'activities' ? 'active' : ''}`} onClick={() => setDetailTab('activities')}>
+                                    Activities {dealActivities.length > 0 && `(${dealActivities.length})`}
+                                </button>
+                                <button className={`detail-tab ${detailTab === 'emails' ? 'active' : ''}`} onClick={() => setDetailTab('emails')}>
+                                    Emails {dealEmails.length > 0 && `(${dealEmails.length})`}
+                                </button>
                                 <button className={`detail-tab ${detailTab === 'notes' ? 'active' : ''}`} onClick={() => setDetailTab('notes')}>
                                     Notes {selectedDeal.notes?.length > 0 && `(${selectedDeal.notes.length})`}
                                 </button>
@@ -350,6 +423,8 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                         <div className="deal-detail-item"><div className="label">Company</div><div className="value">{selectedDeal.company || '—'}</div></div>
                                         <div className="deal-detail-item"><div className="label">Probability</div><div className="value">{selectedDeal.probability}%</div></div>
                                         <div className="deal-detail-item"><div className="label">Days Open</div><div className="value">{selectedDeal.daysOpen || 0}</div></div>
+                                        <div className="deal-detail-item"><div className="label">Expected Close</div><div className="value" style={isOverdue(selectedDeal.expectedClose) ? { color: '#dc2626', fontWeight: 600 } : {}}>{selectedDeal.expectedClose || '—'}{isOverdue(selectedDeal.expectedClose) && ' ⏰ OVERDUE'}</div></div>
+                                        {selectedDeal.customFields?.winLossReason && <div className="deal-detail-item"><div className="label">{selectedDeal.stage === 'Won' ? '🎉 Win Reason' : '❌ Loss Reason'}</div><div className="value">{selectedDeal.customFields.winLossReason}{selectedDeal.customFields.winLossNote ? ` — ${selectedDeal.customFields.winLossNote}` : ''}</div></div>}
                                     </div>
                                     <div style={{ marginTop: 12 }}>
                                         <div className="form-label">Move to Stage</div>
@@ -493,12 +568,54 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                                 </div>
                             )}
 
+                            {detailTab === 'activities' && (
+                                <div>
+                                    {dealActivities.length > 0 ? dealActivities.map((a, i) => (
+                                        <div className="deal-history-item" key={i}>
+                                            <div className="deal-history-icon">{a.type === 'call' ? '📞' : a.type === 'email' ? '📧' : a.type === 'meeting' ? '🤝' : '📋'}</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: 13, fontWeight: 500, display: 'flex', justifyContent: 'space-between' }}>
+                                                    <span>{a.title}</span>
+                                                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: a.done ? '#10b981' : a.priority === 'high' ? '#dc2626' : '#f59e0b', color: '#fff' }}>
+                                                        {a.done ? '✓ Done' : a.priority || 'pending'}
+                                                    </span>
+                                                </div>
+                                                <div style={{ fontSize: 11, color: '#64748b' }}>{a.due || a.dueDate || '—'}</div>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="empty-state" style={{ padding: 24 }}><p>No activities linked to this deal. Create activities with this deal's name in the "Related Deal" field.</p></div>
+                                    )}
+                                </div>
+                            )}
+
+                            {detailTab === 'emails' && (
+                                <div>
+                                    {dealEmails.length > 0 ? dealEmails.map((e, i) => (
+                                        <div className="deal-history-item" key={i}>
+                                            <div className="deal-history-icon">{e.opened ? '📬' : '📧'}</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: 13, fontWeight: 500 }}>{e.subject || '(No subject)'}</div>
+                                                <div style={{ fontSize: 11, color: '#64748b', display: 'flex', gap: 12 }}>
+                                                    <span>To: {e.contact || e.email}</span>
+                                                    <span>{e.sentAt ? new Date(e.sentAt).toLocaleDateString() : '—'}</span>
+                                                    {e.opened && <span style={{ color: '#10b981' }}>✓ Opened{e.openedAt ? ` ${new Date(e.openedAt).toLocaleDateString()}` : ''}</span>}
+                                                    {e.clicked && <span style={{ color: '#3b82f6' }}>🔗 Clicked</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="empty-state" style={{ padding: 24 }}><p>No emails logged to this deal. Send emails linked to a deal in the Email Composer.</p></div>
+                                    )}
+                                </div>
+                            )}
+
                             {detailTab === 'history' && (
                                 <div>
                                     {selectedDeal.history?.length > 0 ? (
                                         [...selectedDeal.history].reverse().map((h, i) => (
                                             <div className="deal-history-item" key={i}>
-                                                <div className="deal-history-icon">{h.action === 'stage' ? '📦' : h.action === 'created' ? '✨' : '📋'}</div>
+                                                <div className="deal-history-icon">{h.action === 'won' ? '🎉' : h.action === 'lost' ? '❌' : h.action === 'stage' ? '📦' : h.action === 'created' ? '✨' : '📋'}</div>
                                                 <div>
                                                     <div style={{ fontSize: 13, fontWeight: 500 }}>{h.detail}</div>
                                                     <div style={{ fontSize: 11, color: '#64748b' }}>{h.date}</div>
@@ -515,6 +632,42 @@ export default function Pipeline({ deals, pipelines, toast, refreshDeals }) {
                             <button className="btn btn-danger" onClick={() => handleDeleteDeal(selectedDeal.id)}>Delete</button>
                             <button className="btn btn-ghost" onClick={() => { setDetailTab('edit'); setEditForm(selectedDeal); }}>✏️ Edit</button>
                             <button className="btn btn-ghost" onClick={() => setSelectedDeal(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Win/Loss Reason Modal */}
+            {winLossModal && (
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setWinLossModal(null)}>
+                    <div className="modal" style={{ maxWidth: 440 }}>
+                        <div className="modal-header">
+                            <h3>{winLossModal.stage === 'Won' ? '🎉 Mark as Won' : '❌ Mark as Lost'}</h3>
+                            <button className="modal-close" onClick={() => setWinLossModal(null)}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">{winLossModal.stage === 'Won' ? 'Why did we win?' : 'Why did we lose?'} *</label>
+                                <select className="form-select" value={winLossReason} onChange={e => setWinLossReason(e.target.value)}>
+                                    <option value="">Select a reason...</option>
+                                    {(winLossModal.stage === 'Won' ? WIN_REASONS : LOSS_REASONS).map(r => (
+                                        <option key={r} value={r}>{r}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group" style={{ marginTop: 12 }}>
+                                <label className="form-label">Additional notes (optional)</label>
+                                <input className="form-input" placeholder="Any details worth capturing..." value={winLossNote} onChange={e => setWinLossNote(e.target.value)} />
+                            </div>
+                            <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-secondary)', borderRadius: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                                <strong>{winLossModal.deal.title}</strong> — {fmt(winLossModal.deal.value)}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-ghost" onClick={() => setWinLossModal(null)}>Cancel</button>
+                            <button className={`btn ${winLossModal.stage === 'Won' ? 'btn-primary' : 'btn-danger'}`} onClick={confirmWinLoss} disabled={!winLossReason}>
+                                {winLossModal.stage === 'Won' ? '🎉 Confirm Win' : '❌ Confirm Loss'}
+                            </button>
                         </div>
                     </div>
                 </div>
