@@ -68,6 +68,14 @@ function App() {
   const [changePwForm, setChangePwForm] = useState({ current: '', newPw: '', confirm: '' });
   const [changePwError, setChangePwError] = useState('');
   const [changePwLoading, setChangePwLoading] = useState(false);
+  const [welcomeBanner, setWelcomeBanner] = useState(null);
+
+  const getGreeting = (name) => {
+    const h = new Date().getHours();
+    const timeGreet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    const firstName = (name || '').split(' ')[0] || 'there';
+    return { timeGreet, firstName };
+  };
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
@@ -138,6 +146,10 @@ function App() {
     if (!localStorage.getItem('p3d_toured')) {
       setShowOnboarding(true);
     }
+    // Show welcome greeting
+    const { timeGreet, firstName } = getGreeting(result.user.name);
+    setWelcomeBanner({ timeGreet, firstName });
+    setTimeout(() => setWelcomeBanner(null), 4000);
     // Request push notification permission
     requestNotificationPermission();
   };
@@ -148,6 +160,10 @@ function App() {
     setCurrentUser(result.user);
     if (result.user.mustChangePw) setShowForceChangePw(true);
     loadAllData();
+    // Show welcome greeting after 2FA
+    const { timeGreet, firstName } = getGreeting(result.user.name);
+    setWelcomeBanner({ timeGreet, firstName });
+    setTimeout(() => setWelcomeBanner(null), 4000);
     requestNotificationPermission();
   };
 
@@ -495,6 +511,37 @@ function App() {
           </div>
         ))}
       </div>
+
+      {/* Welcome Banner */}
+      {welcomeBanner && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+          animation: 'fadeIn 0.3s ease',
+        }} onClick={() => setWelcomeBanner(null)}>
+          <div style={{
+            textAlign: 'center', padding: '48px 60px', borderRadius: 20,
+            background: 'linear-gradient(135deg, var(--bg-elevated), var(--bg-secondary))',
+            border: '1px solid var(--border)', boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
+            animation: 'slideUp 0.5s ease', maxWidth: '90vw',
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>
+              {welcomeBanner.timeGreet}, {welcomeBanner.firstName}!
+            </div>
+            <div style={{
+              fontSize: 22, fontWeight: 700,
+              background: 'linear-gradient(135deg, #10b981, #0d9488)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              marginTop: 4,
+            }}>
+              Let's WIN today! 🏆
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 16 }}>Click anywhere to continue</div>
+          </div>
+        </div>
+      )}
 
       {/* Click outside user menu to close */}
       {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowUserMenu(false)} />}
