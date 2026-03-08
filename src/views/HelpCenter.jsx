@@ -73,6 +73,8 @@ const GUIDE_SECTIONS = [
         title: '📧 Email — Compose & Track',
         content: [
             { heading: 'Composing', text: '1. Go to Email in the sidebar\n2. Fill in recipient, subject, and body\n3. Click Send' },
+            { heading: 'AI Email Drafter', text: 'The email composer includes a built-in AI writer powered by Gemini:\n1. Click ✨ Draft in the AI Email Drafter section\n2. Describe what you want: "Write a follow-up about the CCTV quote" or "Introduce our DAS capabilities"\n3. AI generates a professional subject line and email body with your deal context\n4. Edit as needed and send\n\n💡 The AI knows your contact, company, deal value, and stage — it writes contextual emails specific to 3DTSI services.' },
+            { heading: 'Templates', text: 'Quick Templates: Introduction, Follow-Up, Proposal Sent, Thank You, Check-In.\nEach template auto-fills contact name, company, and deal info.' },
             { heading: 'Tracking', text: 'The Email Tracking tab shows all emails sent, open/click tracking, and engagement scores for each contact.' },
         ]
     },
@@ -84,10 +86,14 @@ const GUIDE_SECTIONS = [
         ]
     },
     {
-        title: '🧠 AI Coach — Smart Deal Scoring',
+        title: '🧠 AI Coach — Gemini-Powered Sales Intelligence',
         content: [
-            { heading: 'How It Works', text: 'AI Coach analyzes your deals based on: deal value, probability, how long it\'s been open, whether it has a contact and company, stage progression, and note count.' },
-            { heading: 'Using It', text: '1. Go to AI Coach in the sidebar\n2. Click Analyze next to any deal\n3. You\'ll see a score (1-100) and specific recommendations like "Add a contact" or "This deal is aging, schedule a follow-up"\n\n💡 Check the AI Coach weekly. Focus on deals with low scores.' },
+            { heading: 'Overview', text: 'AI Coach is your personal sales strategist powered by Google Gemini. It has 4 tabs, each with different AI capabilities.' },
+            { heading: '🧠 Deal Coach (Tab 1)', text: 'Analyzes each deal using AI scoring + Gemini strategic analysis:\n1. Click any deal in the scored list\n2. See the AI score (1-100) with grade (A/B/C/D)\n3. Read the Gemini Pro Strategic Insight — risk assessment, action plan, and closing strategy\n4. Click 📄 Generate Proposal to create a full proposal draft for that deal\n\n💡 The AI knows 3DTSI\'s trades and gives advice specific to low-voltage projects.' },
+            { heading: '💬 Ask AI (Tab 2)', text: 'Free-form sales coaching — ask anything:\n• "How should I handle a price objection on a CCTV project?"\n• "Best practices for DAS proposals"\n• "How to upsell access control on a cabling job"\n• "Tips for winning GC referrals"\n\nQuick prompts are available to get you started. The AI has context on your pipeline and current deals.' },
+            { heading: '📊 Win/Loss Analysis (Tab 3)', text: 'AI analyzes your won and lost deals to find patterns:\n• What types of deals you\'re winning (and why)\n• Where deals are being lost (and what to change)\n• Top 3 deals to focus on this week\n• Strategic recommendations to improve your win rate\n\nClick 🧠 Analyze My Pipeline to generate the report.' },
+            { heading: '🎯 Lead Scoring (Tab 4)', text: 'AI evaluates your early-stage leads (Lead In + Contact Made):\n• 🔴 Hot — pursue immediately\n• 🟡 Warm — nurture\n• ⚪ Cold — deprioritize\n\nIncludes qualification checklists specific to low-voltage sales.' },
+            { heading: '📄 Proposal Generation', text: 'From the Deal Coach tab:\n1. Select a deal\n2. Click 📄 Generate Proposal\n3. AI creates a full proposal with: Executive Summary, Scope of Work, Technical Approach, Timeline, Investment Summary, Terms, and About 3DTSI\n4. Click 📋 Copy to paste into Word or email\n\n💡 The AI infers the trade from the deal title (e.g. "Sacramento Hospital — Access Control" triggers access control scope).' },
         ]
     },
     {
@@ -120,7 +126,16 @@ const GUIDE_SECTIONS = [
         title: '⚙️ Settings',
         content: [
             { heading: 'Your Profile', text: 'Click your name at the bottom of the sidebar to view your profile or sign out.' },
-            { heading: 'Settings Page', text: '• General — company info (3D Technology Services Inc.), currency, fiscal year\n• Custom Fields — Service Line, Project Type, Lead Source, Bid Due Date, Territory, and more\n• Pipelines — customize stages (Lead In → Contact Made → Site Survey → Proposal → Negotiation → Won)\n• Users (admin only) — manage the sales team, add/remove reps' },
+            { heading: 'Settings Page', text: '• General — company info (3D Technology Services Inc.), currency, fiscal year\n• Custom Fields — Service Line, Project Type, Lead Source, Bid Due Date, Territory, and more\n• Pipelines — customize stages (Lead In → Contact Made → Site Survey → Proposal → Negotiation → Won)\n• Security — Two-Factor Authentication (2FA), Push Notifications, Offline Mode\n• Users (admin only) — manage the sales team, add/remove reps' },
+        ]
+    },
+    {
+        title: '🔐 Security Features',
+        content: [
+            { heading: 'Two-Factor Authentication (2FA)', text: 'Add an extra layer of security to your account:\n1. Go to Settings → Security tab\n2. Click 🔐 Enable 2FA\n3. Copy the setup key and add it to Google Authenticator or Authy\n4. Enter the 6-digit code from your app to verify\n5. Done! You\'ll need the code every time you sign in\n\nTo disable: enter your password in the Disable section.' },
+            { heading: 'Push Notifications', text: 'Get browser alerts for deal updates and activities:\n1. Go to Settings → Security tab\n2. Click 🔔 Enable Notifications\n3. Allow when your browser asks for permission\n\nYou\'ll receive alerts even when Pipeline3D is in the background.' },
+            { heading: 'Offline Mode', text: 'Pipeline3D works without internet:\n• The app caches all your data automatically\n• When offline, you can view deals, contacts, and activities in read-only mode\n• When you reconnect, everything syncs automatically\n• Check connection status in Settings → Security → Offline Mode' },
+            { heading: 'Password Security', text: '• Minimum 8 characters required\n• Passwords are hashed with PBKDF2 (100,000 iterations + salt)\n• Login rate limiting: 5 failed attempts = 15-minute lockout\n• All sessions are invalidated when you change your password' },
         ]
     },
     {
