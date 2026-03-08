@@ -6,6 +6,7 @@ function serializeDeal(d) {
         ...d,
         notes: JSON.parse(d.notes || '[]'),
         history: JSON.parse(d.history || '[]'),
+        products: JSON.parse(d.products || '[]'),
         customFields: JSON.parse(d.custom_fields || '{}'),
         pipelineId: d.pipeline_id,
         contactEmail: d.contact_email,
@@ -55,12 +56,12 @@ export async function onRequestPost(context) {
 
         await env.DB.prepare(`INSERT OR REPLACE INTO deals
       (id, title, value, stage, pipeline_id, contact, contact_email, company_id, company,
-       probability, days_open, label, expected_close, notes, history, custom_fields, owner_id, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
+       probability, days_open, label, expected_close, notes, history, products, custom_fields, owner_id, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
             .bind(d.id, d.title, d.value, d.stage, d.pipelineId, d.contact, d.contactEmail,
                 d.companyId, d.company, d.probability, d.daysOpen || 0, d.label,
                 d.expectedClose, JSON.stringify(d.notes || []),
-                JSON.stringify(d.history || []), JSON.stringify(d.customFields || {}), ownerId)
+                JSON.stringify(d.history || []), JSON.stringify(d.products || []), JSON.stringify(d.customFields || {}), ownerId)
             .run();
         return json({ success: true }, 200, request);
     } catch (e) { return errorResponse(e, request); }
@@ -76,12 +77,12 @@ export async function onRequestPut(context) {
             const ownerId = (isAdmin(context) && d.ownerId) ? d.ownerId : (d.ownerId || user.id);
             return env.DB.prepare(`INSERT OR REPLACE INTO deals
         (id, title, value, stage, pipeline_id, contact, contact_email, company_id, company,
-         probability, days_open, label, expected_close, notes, history, custom_fields, owner_id, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
+         probability, days_open, label, expected_close, notes, history, products, custom_fields, owner_id, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime("now"))`)
                 .bind(d.id, d.title, d.value, d.stage, d.pipelineId, d.contact, d.contactEmail,
                     d.companyId, d.company, d.probability, d.daysOpen || 0, d.label,
                     d.expectedClose, JSON.stringify(d.notes || []),
-                    JSON.stringify(d.history || []), JSON.stringify(d.customFields || {}), ownerId);
+                    JSON.stringify(d.history || []), JSON.stringify(d.products || []), JSON.stringify(d.customFields || {}), ownerId);
         });
         await env.DB.batch(batch);
         return json({ success: true }, 200, request);
