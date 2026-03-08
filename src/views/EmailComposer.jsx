@@ -64,6 +64,22 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
 
     const handleSend = async () => {
         if (!draftSubject.trim()) return;
+
+        // Open Outlook compose with pre-filled content (falls back to mailto:)
+        const to = draftEmail || '';
+        const subject = encodeURIComponent(draftSubject);
+        const body = encodeURIComponent(draftBody);
+
+        if (to.includes('@')) {
+            // Outlook Web compose
+            const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(to)}&subject=${subject}&body=${body}`;
+            window.open(outlookUrl, '_blank');
+        } else {
+            // Fallback to mailto (opens desktop Outlook)
+            window.open(`mailto:${to}?subject=${subject}&body=${body}`, '_blank');
+        }
+
+        // Log the email in Pipeline3D for tracking
         const emailLog = {
             id: Date.now(),
             dealId: deals.find(d => d.title === draftDeal)?.id || null,
@@ -81,7 +97,7 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
         try {
             await api.saveEmail(emailLog);
             await refreshEmails();
-            toast('Email logged!');
+            toast('✅ Outlook opened — send from your inbox!');
             setShowCompose(false);
             resetForm();
         } catch (err) { toast(err.message, 'error'); }
@@ -162,7 +178,7 @@ export default function EmailComposer({ deals, contacts, toast, refreshEmails })
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-ghost" onClick={() => setShowCompose(false)}>Cancel</button>
-                            <button className="btn btn-primary" onClick={handleSend} disabled={!draftSubject.trim()}>📤 Send & Log</button>
+                            <button className="btn btn-primary" onClick={handleSend} disabled={!draftSubject.trim()}>📤 Send via Outlook</button>
                         </div>
                     </div>
                 </div>
