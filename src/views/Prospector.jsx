@@ -50,7 +50,7 @@ const CHATBOT_MESSAGES = [
     { from: 'visitor', text: 'I need a quote for a network cabling project', time: '2:31 PM' },
     { from: 'bot', text: 'Great! I can help with that. To get you an accurate quote, I\'ll need a few details:\n\n1. 📍 Project location (city/state)\n2. 📐 Approximate square footage\n3. 🔌 Number of network drops needed\n4. 📅 Target completion date\n\nFeel free to share what you know!', time: '2:31 PM' },
     { from: 'visitor', text: 'Houston TX, about 15,000 sqft office, need around 120 drops, hoping to finish by end of April', time: '2:32 PM' },
-    { from: 'bot', text: '✅ Got it! Based on your details:\n\n• 📍 Houston, TX\n• 📐 15,000 sq ft\n• 🔌 120 cat6 drops\n• 📅 Target: April 2026\n\nI\'m creating a lead for our team right now. A specialist will reach out within 2 hours with a detailed proposal.\n\nWould you like to schedule a call or continue chatting?', time: '2:32 PM' },
+    { from: 'bot', text: '✅ Got it! Based on your details:\n\n• 📍 Houston, TX\n• 📐 15,000 sq ft\n• 🔌 120 cat6 drops\n• 📅 Target: April 2026\n\nI\'m creating a lead for our Structured Cabling team right now. A specialist will reach out within 2 hours with a detailed proposal.\n\nWould you like to schedule a call or continue chatting?', time: '2:32 PM' },
 ];
 
 const LIVE_CHATS = [
@@ -62,16 +62,16 @@ const LIVE_CHATS = [
     },
     {
         id: 2, visitor: 'Jennifer K.', email: 'jk@techsolutions.com', page: '/contact', status: 'active', unread: 0, lastMsg: 'Perfect, I\'ll wait for the proposal', time: '8m ago', messages: [
-            { from: 'visitor', text: 'Need security camera system for our warehouse', time: '3:08 PM' },
+            { from: 'visitor', text: 'Need CCTV and intrusion alarm system for our warehouse', time: '3:08 PM' },
             { from: 'agent', text: 'Hi Jennifer! I\'d be happy to help. How large is the warehouse?', time: '3:09 PM' },
-            { from: 'visitor', text: 'About 40,000 sqft, need 24 cameras', time: '3:10 PM' },
-            { from: 'agent', text: 'Got it. I\'m putting together a proposal with PTZ and fixed cameras. Should have it to you within an hour.', time: '3:11 PM' },
+            { from: 'visitor', text: 'About 40,000 sqft, need 24 cameras plus intrusion sensors on all entry points', time: '3:10 PM' },
+            { from: 'agent', text: 'Got it. I\'m putting together a proposal with PTZ and fixed cameras plus a full intrusion panel. Should have it to you within an hour.', time: '3:11 PM' },
             { from: 'visitor', text: 'Perfect, I\'ll wait for the proposal', time: '3:12 PM' },
         ]
     },
     {
-        id: 3, visitor: 'Unknown', email: '', page: '/pricing', status: 'waiting', unread: 1, lastMsg: 'What are your rates for access control?', time: '15m ago', messages: [
-            { from: 'visitor', text: 'What are your rates for access control?', time: '3:01 PM' },
+        id: 3, visitor: 'Unknown', email: '', page: '/services/das', status: 'waiting', unread: 1, lastMsg: 'Need a DAS system for our new building — no cell signal inside', time: '15m ago', messages: [
+            { from: 'visitor', text: 'Need a DAS system for our new building — no cell signal inside', time: '3:01 PM' },
         ]
     },
 ];

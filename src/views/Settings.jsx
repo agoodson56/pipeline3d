@@ -3,7 +3,7 @@ import { useState, lazy, Suspense } from 'react';
 const UserManagement = lazy(() => import('./UserManagement.jsx'));
 
 const DEFAULT_FIELDS = [
-    { id: 1, name: 'Service Line', type: 'dropdown', entity: 'deals', options: ['Security Systems', 'Structured Cabling', 'Audio & Video Systems', 'Networking', 'Fire & Life Safety', 'Service & Maintenance'], active: true },
+    { id: 1, name: 'Service Line', type: 'dropdown', entity: 'deals', options: ['Structured Cabling', 'CCTV', 'DAS', 'Access Control', 'Audio Visual', 'Intrusion', 'Fire Alarm', 'Security Systems', 'Service & Maintenance'], active: true },
     { id: 2, name: 'Project Type', type: 'dropdown', entity: 'deals', options: ['New Install', 'Upgrade / Retrofit', 'Service & Repair', 'Design-Build', 'Consultation / Assessment', 'Maintenance Agreement'], active: true },
     { id: 3, name: 'Lead Source', type: 'dropdown', entity: 'deals', options: ['Website (3dtsi.com)', 'Referral', 'GC / Contractor Referral', 'Architect / Engineer Spec', 'RFP / Bid Invite', 'Existing Customer', 'Cold Call', 'Trade Show', 'LinkedIn', 'Other'], active: true },
     { id: 4, name: 'Decision Timeline', type: 'dropdown', entity: 'deals', options: ['Immediate', '1-3 months', '3-6 months', '6+ months'], active: true },

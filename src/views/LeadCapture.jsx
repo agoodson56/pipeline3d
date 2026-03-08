@@ -11,7 +11,7 @@ const FORM_FIELDS = [
 export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
     const [tab, setTab] = useState('form');
     const [submissions, setSubmissions] = useState([
-        { id: 1, name: 'Sarah Johnson', email: 'sarah@techcorp.com', company: 'TechCorp', message: 'Need a quote for access control & camera system — new office build, 25 doors, 40 cameras', date: 'Mar 5', status: 'new' },
+        { id: 1, name: 'Sarah Johnson', email: 'sarah@techcorp.com', company: 'TechCorp', message: 'Need a quote for CCTV, access control & intrusion — new office build, 25 doors, 40 cameras, perimeter alarm', date: 'Mar 5', status: 'new' },
         { id: 2, name: 'Mike Chen', email: 'mike@globalinc.com', company: 'Global Inc', message: 'Looking for structured cabling bid — 200 Cat6A drops, 2-story office, Sacramento area', date: 'Mar 3', status: 'contacted' },
     ]);
     const [formConfig, setFormConfig] = useState({
