@@ -392,29 +392,6 @@ function App() {
           </div>
           <span className="sidebar-user-dots">⋯</span>
         </div>
-
-        {/* User Dropdown Menu */}
-        {showUserMenu && (
-          <div className="user-menu">
-            <div className="user-menu-header">
-              <div className="sidebar-user-avatar" style={{ background: currentUser.avatarColor || '#0D9488', width: 32, height: 32, fontSize: 12 }}>
-                {getInitials(currentUser.name)}
-              </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13 }}>{currentUser.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{currentUser.email}</div>
-              </div>
-            </div>
-            <div className="user-menu-divider" />
-            <div className="user-menu-item" onClick={() => { navigate('settings'); setShowUserMenu(false); }}>
-              ⚙️ Settings
-            </div>
-            <div className="user-menu-divider" />
-            <div className="user-menu-item user-menu-item-danger" onClick={handleLogout}>
-              🚪 Sign Out
-            </div>
-          </div>
-        )}
       </aside>
 
       <main className="main-content">
@@ -565,8 +542,36 @@ function App() {
         </div>
       )}
 
-      {/* Click outside user menu to close */}
-      {showUserMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setShowUserMenu(false)} />}
+      {/* User Menu — rendered OUTSIDE sidebar to avoid overflow clipping */}
+      {showUserMenu && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setShowUserMenu(false)} />
+          <div style={{
+            position: 'fixed', bottom: 70, left: 12, width: 'calc(var(--sidebar-width) - 24px)',
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)',
+            zIndex: 9999, overflow: 'hidden', animation: 'slideUp 0.15s ease',
+          }}>
+            <div className="user-menu-header">
+              <div className="sidebar-user-avatar" style={{ background: currentUser.avatarColor || '#0D9488', width: 32, height: 32, fontSize: 12 }}>
+                {getInitials(currentUser.name)}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{currentUser.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{currentUser.email}</div>
+              </div>
+            </div>
+            <div className="user-menu-divider" />
+            <div className="user-menu-item" onClick={() => { navigate('settings'); setShowUserMenu(false); }}>
+              ⚙️ Settings
+            </div>
+            <div className="user-menu-divider" />
+            <div className="user-menu-item user-menu-item-danger" onClick={handleLogout}>
+              🚪 Sign Out
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Force Password Change Modal */}
       {showForceChangePw && (
