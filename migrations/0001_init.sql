@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS pipelines (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  color TEXT NOT NULL DEFAULT '#6366f1',
+  color TEXT NOT NULL DEFAULT '#0D9488',
   stages TEXT NOT NULL DEFAULT '[]',
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Seed default pipelines
 INSERT OR IGNORE INTO pipelines (id, name, color, stages) VALUES
-  ('p1', 'Sales Pipeline', '#6366f1', '[{"id":"s1","name":"Lead In","color":"#6366f1"},{"id":"s2","name":"Contacted","color":"#f59e0b"},{"id":"s3","name":"Proposal","color":"#3b82f6"},{"id":"s4","name":"Negotiation","color":"#8b5cf6"},{"id":"s5","name":"Won","color":"#10b981"}]'),
+  ('p1', 'Sales Pipeline', '#0D9488', '[{"id":"s1","name":"Lead In","color":"#0D9488"},{"id":"s2","name":"Contacted","color":"#f59e0b"},{"id":"s3","name":"Proposal","color":"#3b82f6"},{"id":"s4","name":"Negotiation","color":"#8b5cf6"},{"id":"s5","name":"Won","color":"#10b981"}]'),
   ('p2', 'Partnerships', '#10b981', '[{"id":"s6","name":"Identified","color":"#10b981"},{"id":"s7","name":"Intro","color":"#3b82f6"},{"id":"s8","name":"MOU","color":"#8b5cf6"},{"id":"s9","name":"Signed","color":"#f59e0b"}]');
 
 -- Seed default companies

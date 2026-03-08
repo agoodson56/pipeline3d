@@ -1,26 +1,28 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import './index.css';
+import { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import * as api from './api.js';
-import Dashboard from './views/Dashboard.jsx';
-import Pipeline from './views/Pipeline.jsx';
-import Contacts from './views/Contacts.jsx';
-import Companies from './views/Companies.jsx';
-import Activities from './views/Activities.jsx';
-import CalendarView from './views/CalendarView.jsx';
-import Forecast from './views/Forecast.jsx';
-import Reports from './views/Reports.jsx';
-import EmailTracking from './views/EmailTracking.jsx';
-import EmailComposer from './views/EmailComposer.jsx';
-import Automations from './views/Automations.jsx';
-import Integrations from './views/Integrations.jsx';
-import AICoach from './views/AICoach.jsx';
-import LeadCapture from './views/LeadCapture.jsx';
-import Settings from './views/Settings.jsx';
-import EmailSequences from './views/EmailSequences.jsx';
-import DataImport from './views/DataImport.jsx';
-import OnboardingTour from './views/OnboardingTour.jsx';
-import HelpCenter from './views/HelpCenter.jsx';
-import Prospector from './views/Prospector.jsx';
+
+// Lazy-load all views — only Dashboard loads eagerly for fastest initial paint
+const Dashboard = lazy(() => import('./views/Dashboard.jsx'));
+const Pipeline = lazy(() => import('./views/Pipeline.jsx'));
+const Contacts = lazy(() => import('./views/Contacts.jsx'));
+const Companies = lazy(() => import('./views/Companies.jsx'));
+const Activities = lazy(() => import('./views/Activities.jsx'));
+const CalendarView = lazy(() => import('./views/CalendarView.jsx'));
+const Forecast = lazy(() => import('./views/Forecast.jsx'));
+const Reports = lazy(() => import('./views/Reports.jsx'));
+const EmailTracking = lazy(() => import('./views/EmailTracking.jsx'));
+const EmailComposer = lazy(() => import('./views/EmailComposer.jsx'));
+const Automations = lazy(() => import('./views/Automations.jsx'));
+const Integrations = lazy(() => import('./views/Integrations.jsx'));
+const AICoach = lazy(() => import('./views/AICoach.jsx'));
+const LeadCapture = lazy(() => import('./views/LeadCapture.jsx'));
+const Settings = lazy(() => import('./views/Settings.jsx'));
+const EmailSequences = lazy(() => import('./views/EmailSequences.jsx'));
+const DataImport = lazy(() => import('./views/DataImport.jsx'));
+const OnboardingTour = lazy(() => import('./views/OnboardingTour.jsx'));
+const HelpCenter = lazy(() => import('./views/HelpCenter.jsx'));
+const Prospector = lazy(() => import('./views/Prospector.jsx'));
+
 
 const NAV = [
   { key: 'dashboard', icon: '📊', label: 'Dashboard', section: 'main' },
@@ -232,7 +234,9 @@ function App() {
           </div>
         </header>
         <div className="page-content">
-          {renderView()}
+          <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}><div className="spinner" /></div>}>
+            {renderView()}
+          </Suspense>
         </div>
       </main>
 
