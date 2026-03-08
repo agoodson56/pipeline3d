@@ -46,7 +46,7 @@ const NAV = [
   { key: 'settings', icon: '⚙️', label: 'Settings', section: 'tools' },
 ];
 
-const MOBILE_NAV = ['dashboard', 'pipeline', 'contacts', 'activities', 'ai'];
+const MOBILE_NAV = ['dashboard', 'pipeline', 'contacts', 'activities', 'more'];
 
 function App() {
   // ═══ AUTH STATE ═══
@@ -69,6 +69,7 @@ function App() {
   const [changePwError, setChangePwError] = useState('');
   const [changePwLoading, setChangePwLoading] = useState(false);
   const [welcomeBanner, setWelcomeBanner] = useState(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const getGreeting = (name) => {
     const h = new Date().getHours();
@@ -417,15 +418,71 @@ function App() {
       {/* Mobile Bottom Nav */}
       <nav className="mobile-bottom-nav">
         {MOBILE_NAV.map(key => {
+          if (key === 'more') {
+            return (
+              <div key="more" className={`mobile-nav-item ${showMoreMenu ? 'active' : ''}`} onClick={() => setShowMoreMenu(m => !m)}>
+                <span>☰</span>
+                <span>More</span>
+              </div>
+            );
+          }
           const n = NAV.find(x => x.key === key);
           return (
-            <div key={key} className={`mobile-nav-item ${view === key ? 'active' : ''}`} onClick={() => setView(key)}>
+            <div key={key} className={`mobile-nav-item ${view === key && !showMoreMenu ? 'active' : ''}`} onClick={() => { setView(key); setShowMoreMenu(false); }}>
               <span>{n.icon}</span>
               <span>{n.label}</span>
             </div>
           );
         })}
       </nav>
+
+      {/* Mobile More Menu */}
+      {showMoreMenu && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 56,
+          background: 'var(--bg-primary)', zIndex: 199, overflowY: 'auto',
+          animation: 'slideUp 0.2s ease', paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}>
+          <div style={{ padding: '16px 16px 8px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="sidebar-user-avatar" style={{ background: currentUser.avatarColor || '#0D9488', width: 36, height: 36, fontSize: 13 }}>
+              {getInitials(currentUser.name)}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>{currentUser.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{currentUser.email}</div>
+            </div>
+          </div>
+          {['main', 'insights', 'tools'].map(section => (
+            <div key={section}>
+              <div style={{ padding: '12px 16px 4px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--text-muted)' }}>
+                {section}
+              </div>
+              {NAV.filter(n => n.section === section).map(n => (
+                <div key={n.key}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+                    cursor: 'pointer', transition: 'background 0.1s',
+                    background: view === n.key ? 'var(--accent-muted)' : 'transparent',
+                    color: view === n.key ? 'var(--accent)' : 'var(--text-primary)',
+                    fontWeight: view === n.key ? 600 : 400, fontSize: 14,
+                  }}
+                  onClick={() => { setView(n.key); setShowMoreMenu(false); }}>
+                  <span style={{ fontSize: 18, width: 24, textAlign: 'center' }}>{n.icon}</span>
+                  <span>{n.label}</span>
+                  {n.key === 'activities' && activities.filter(a => !a.done).length > 0 && (
+                    <span className="nav-badge">{activities.filter(a => !a.done).length}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ padding: '8px 16px 24px', borderTop: '1px solid var(--border)', marginTop: 8 }}>
+            <button className="btn btn-danger" style={{ width: '100%' }} onClick={() => { setShowMoreMenu(false); handleLogout(); }}>
+              🚪 Sign Out
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Command Palette */}
       {cmdOpen && (
