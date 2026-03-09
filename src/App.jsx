@@ -74,10 +74,8 @@ function App() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const getGreeting = (name) => {
-    const h = new Date().getHours();
-    const timeGreet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     const firstName = (name || '').split(' ')[0] || 'there';
-    return { timeGreet, firstName };
+    return { timeGreet: 'Hello', firstName };
   };
 
   const speakGreeting = (timeGreet, firstName) => {
@@ -85,7 +83,7 @@ function App() {
       if (!('speechSynthesis' in window)) return;
       // Cancel any pending speech
       window.speechSynthesis.cancel();
-      const msg = new SpeechSynthesisUtterance(`${timeGreet}, ${firstName}! Let's win today!`);
+      const msg = new SpeechSynthesisUtterance(`Hello, ${firstName}! Today is the best day ever! Let's go win some bids!`);
       msg.rate = 0.95;
       msg.pitch = 1.05;
       msg.volume = 1;
@@ -587,7 +585,7 @@ function App() {
           }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>
-              {welcomeBanner.timeGreet}, {welcomeBanner.firstName}!
+              Hello, {welcomeBanner.firstName}!
             </div>
             <div style={{
               fontSize: 22, fontWeight: 700,
@@ -595,7 +593,7 @@ function App() {
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               marginTop: 4,
             }}>
-              Let's WIN today! 🏆
+              Today is the best day ever! Let's go win some bids! 🏆
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 16 }}>Click anywhere to continue</div>
           </div>
