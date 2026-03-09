@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users_new (
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'rep' CHECK(role IN ('admin', 'rep', 'senior_sales', 'customer_care')),
+  role TEXT NOT NULL DEFAULT 'rep' CHECK(role IN ('admin', 'rep', 'sales_consultant', 'senior_sales', 'customer_care')),
   status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'deactivated')),
   avatar_color TEXT DEFAULT '#0D9488',
   last_login TEXT,
