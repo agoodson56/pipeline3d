@@ -23,6 +23,7 @@ const DataImport = lazy(() => import('./views/DataImport.jsx'));
 const OnboardingTour = lazy(() => import('./views/OnboardingTour.jsx'));
 const HelpCenter = lazy(() => import('./views/HelpCenter.jsx'));
 const Prospector = lazy(() => import('./views/Prospector.jsx'));
+const SpecScanner = lazy(() => import('./views/SpecScanner.jsx'));
 
 
 const NAV = [
@@ -41,6 +42,7 @@ const NAV = [
   { key: 'integrations', icon: '🔌', label: 'Integrations', section: 'tools' },
   { key: 'leads', icon: '🧲', label: 'Lead Capture', section: 'tools' },
   { key: 'prospector', icon: '🎯', label: 'Prospector', section: 'tools' },
+  { key: 'specscanner', icon: '📑', label: 'Spec Scanner', section: 'tools' },
   { key: 'import', icon: '📥', label: 'Data Import', section: 'tools' },
   { key: 'help', icon: '🛟', label: 'Help Center', section: 'tools' },
   { key: 'settings', icon: '⚙️', label: 'Settings', section: 'tools' },
@@ -332,6 +334,7 @@ function App() {
       case 'import': return <DataImport {...viewProps} />;
       case 'help': return <HelpCenter {...viewProps} />;
       case 'prospector': return <Prospector {...viewProps} />;
+      case 'specscanner': return <SpecScanner {...viewProps} />;
       case 'settings': return <Settings {...viewProps} />;
       default: return <Dashboard {...viewProps} />;
     }
