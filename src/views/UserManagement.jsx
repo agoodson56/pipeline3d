@@ -140,7 +140,7 @@ export default function UserManagement({ toast, currentUser }) {
                                     className="form-select"
                                     value={user.role}
                                     onChange={e => handleRoleChange(user.id, e.target.value)}
-                                    style={{ width: 100, fontSize: 12, padding: '4px 8px' }}
+                                    style={{ width: 'auto', minWidth: 100, fontSize: 12, padding: '4px 8px' }}
                                     disabled={user.id === currentUser?.id}
                                 >
                                     <option value="admin">Admin</option>
