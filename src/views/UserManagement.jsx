@@ -145,6 +145,8 @@ export default function UserManagement({ toast, currentUser }) {
                                 >
                                     <option value="admin">Admin</option>
                                     <option value="rep">Sales Rep</option>
+                                    <option value="senior_sales">Senior Sales Consultant</option>
+                                    <option value="customer_care">Customer Care Rep</option>
                                 </select>
                                 <button
                                     className="btn btn-ghost btn-sm"
@@ -205,6 +207,8 @@ export default function UserManagement({ toast, currentUser }) {
                                 <select className="form-select" value={newUser.role}
                                     onChange={e => setNewUser(u => ({ ...u, role: e.target.value }))}>
                                     <option value="rep">Sales Rep — sees only their own deals</option>
+                                    <option value="senior_sales">Senior Sales Consultant — sees only their own deals</option>
+                                    <option value="customer_care">Customer Care Rep — sees only their own deals</option>
                                     <option value="admin">Admin — sees all data, manages users</option>
                                 </select>
                             </div>
