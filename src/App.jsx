@@ -81,20 +81,49 @@ function App() {
   const speakGreeting = (timeGreet, firstName) => {
     try {
       if (!('speechSynthesis' in window)) return;
-      // Cancel any pending speech
       window.speechSynthesis.cancel();
-      const msg = new SpeechSynthesisUtterance(`Hello, ${firstName}! Today is the best day ever! Let's go win some bids!`);
-      msg.rate = 0.95;
-      msg.pitch = 1.05;
-      msg.volume = 1;
-      // Try to pick a natural-sounding English voice
+
+      const speak = (voices) => {
+        const msg = new SpeechSynthesisUtterance(`Hello, ${firstName}! Today is the best day ever! Let's go win some bids!`);
+        msg.rate = 0.95;
+        msg.pitch = 1.1;
+        msg.volume = 1;
+
+        // Female voice priority list (natural-sounding, non-robotic)
+        const femaleKeywords = [
+          'Samantha', 'Karen', 'Moira', 'Tessa', 'Fiona', 'Victoria',
+          'Zira', 'Jenny', 'Aria', 'Sara', 'Hazel', 'Susan',
+          'Google UK English Female', 'Google US English Female',
+          'Microsoft Zira', 'Microsoft Jenny',
+          'Female',
+        ];
+        const enVoices = voices.filter(v => v.lang.startsWith('en'));
+
+        // 1st pass: find a female voice by name keywords
+        let picked = null;
+        for (const keyword of femaleKeywords) {
+          picked = enVoices.find(v => v.name.includes(keyword));
+          if (picked) break;
+        }
+        // 2nd pass: any remote/cloud female-sounding English voice (higher quality)
+        if (!picked) picked = enVoices.find(v => !v.localService);
+        // 3rd pass: any English voice
+        if (!picked) picked = enVoices[0];
+
+        if (picked) msg.voice = picked;
+        window.speechSynthesis.speak(msg);
+      };
+
+      // Voices load asynchronously — wait for them if not ready yet
       const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
-        voices.find(v => v.lang.startsWith('en') && v.name.includes('Samantha')) ||
-        voices.find(v => v.lang.startsWith('en') && !v.localService) ||
-        voices.find(v => v.lang.startsWith('en'));
-      if (preferred) msg.voice = preferred;
-      window.speechSynthesis.speak(msg);
+      if (voices.length > 0) {
+        speak(voices);
+      } else {
+        window.speechSynthesis.onvoiceschanged = () => {
+          speak(window.speechSynthesis.getVoices());
+          window.speechSynthesis.onvoiceschanged = null;
+        };
+      }
     } catch { /* Speech not available, fail silently */ }
   };
 
