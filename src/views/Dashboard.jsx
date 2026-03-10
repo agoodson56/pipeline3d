@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
-export default function Dashboard({ deals, contacts, companies, activities }) {
+export default function Dashboard({ deals, contacts, companies, activities, monthlyQuota = 100000 }) {
     const stats = useMemo(() => {
         const open = deals.filter(d => d.stage !== 'Won' && d.stage !== 'Lost');
         const won = deals.filter(d => d.stage === 'Won');
@@ -19,10 +19,10 @@ export default function Dashboard({ deals, contacts, companies, activities }) {
         const velocity = avgDays > 0 ? Math.round(avgDeal * (winRate / 100) * open.length / avgDays) : 0;
         const hottDeals = deals.filter(d => d.label === 'hot' && d.stage !== 'Won' && d.stage !== 'Lost').length;
         const rottingDeals = open.filter(d => (d.daysOpen || 0) > 30).length;
-        const quota = 100000;
+        const quota = monthlyQuota;
         const quotaPct = Math.min(100, Math.round(wonValue / quota * 100));
         return { open, won, lost, closed, totalValue, wonValue, weighted, winRate, pendingActs, overdueActs, avgDeal, avgDays, velocity, hottDeals, rottingDeals, quota, quotaPct };
-    }, [deals, activities]);
+    }, [deals, activities, monthlyQuota]);
 
     const stageDist = useMemo(() => {
         const map = {};

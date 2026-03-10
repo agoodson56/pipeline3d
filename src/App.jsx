@@ -135,6 +135,7 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const [activities, setActivities] = useState([]);
   const [emails, setEmails] = useState([]);
+  const [appSettings, setAppSettings] = useState({ monthlyQuota: 100000, dealRotting: 30, defaultProbability: 20 });
 
   // PWA Install prompt
   useEffect(() => {
@@ -233,12 +234,21 @@ function App() {
   const loadAllData = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, d, c, co, a, e] = await Promise.all([
+      const [p, d, c, co, a, e, s] = await Promise.all([
         api.getPipelines(), api.getDeals(), api.getContacts(),
         api.getCompanies(), api.getActivities(), api.getEmails(),
+        api.getSettings().catch(() => ({})),
       ]);
       setPipelines(p); setDeals(d); setContacts(c);
       setCompanies(co); setActivities(a); setEmails(e);
+      if (s?.monthlyQuota || s?.dealRotting || s?.defaultProbability) {
+        setAppSettings(prev => ({
+          ...prev,
+          ...(s.monthlyQuota ? { monthlyQuota: Number(s.monthlyQuota) } : {}),
+          ...(s.dealRotting ? { dealRotting: Number(s.dealRotting) } : {}),
+          ...(s.defaultProbability ? { defaultProbability: Number(s.defaultProbability) } : {}),
+        }));
+      }
     } catch (err) {
       toast('Failed to load data: ' + err.message, 'error');
     }
@@ -336,10 +346,28 @@ function App() {
 
   const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
+  const refreshSettings = async () => {
+    try {
+      const s = await api.getSettings();
+      if (s) {
+        setAppSettings(prev => ({
+          ...prev,
+          ...(s.monthlyQuota ? { monthlyQuota: Number(s.monthlyQuota) } : {}),
+          ...(s.dealRotting ? { dealRotting: Number(s.dealRotting) } : {}),
+          ...(s.defaultProbability ? { defaultProbability: Number(s.defaultProbability) } : {}),
+        }));
+      }
+    } catch { }
+  };
+
   const viewProps = {
     deals, contacts, companies, activities, emails, pipelines, toast,
     refreshDeals, refreshContacts, refreshCompanies, refreshActivities, refreshEmails, refreshPipelines,
     currentUser, isAdmin,
+    monthlyQuota: appSettings.monthlyQuota,
+    dealRotting: appSettings.dealRotting,
+    defaultProbability: appSettings.defaultProbability,
+    refreshSettings,
   };
 
   const renderView = () => {

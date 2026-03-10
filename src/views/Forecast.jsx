@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export default function Forecast({ deals }) {
-    const quota = 100000; // monthly quota
+export default function Forecast({ deals, monthlyQuota = 100000 }) {
+    const quota = monthlyQuota;
 
     const forecast = useMemo(() => {
         return MONTHS.map((name, i) => {

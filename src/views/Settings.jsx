@@ -14,7 +14,7 @@ const DEFAULT_FIELDS = [
     { id: 8, name: 'LinkedIn URL', type: 'text', entity: 'contacts', options: [], active: false },
 ];
 
-export default function Settings({ toast, pipelines, refreshPipelines, currentUser, isAdmin }) {
+export default function Settings({ toast, pipelines, refreshPipelines, currentUser, isAdmin, monthlyQuota, dealRotting, defaultProbability, refreshSettings }) {
     const [tab, setTab] = useState(isAdmin ? 'users' : 'fields');
     const [customFields, setCustomFields] = useState(DEFAULT_FIELDS);
     const [showAddField, setShowAddField] = useState(false);
@@ -199,9 +199,29 @@ export default function Settings({ toast, pipelines, refreshPipelines, currentUs
                     </div>
                     <div className="chart-card">
                         <div className="chart-card-title">Deal Defaults</div>
-                        <div className="form-group"><label className="form-label">Default Win Probability</label><input className="form-input" type="number" defaultValue="20" /></div>
-                        <div className="form-group"><label className="form-label">Deal Rotting (days)</label><input className="form-input" type="number" defaultValue="30" /></div>
-                        <div className="form-group"><label className="form-label">Monthly Quota ($)</label><input className="form-input" type="number" defaultValue="100000" /></div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            const fd = new FormData(e.target);
+                            const settings = {
+                                defaultProbability: fd.get('defaultProbability'),
+                                dealRotting: fd.get('dealRotting'),
+                                monthlyQuota: fd.get('monthlyQuota'),
+                            };
+                            try {
+                                await api.saveSettings(settings);
+                                if (typeof refreshSettings === 'function') await refreshSettings();
+                                toast('✅ Settings saved!');
+                            } catch (err) { toast(err.message, 'error'); }
+                        }}>
+                            <div className="form-group"><label className="form-label">Default Win Probability (%)</label><input name="defaultProbability" className="form-input" type="number" defaultValue={defaultProbability || 20} min="0" max="100" /></div>
+                            <div className="form-group"><label className="form-label">Deal Rotting (days)</label><input name="dealRotting" className="form-input" type="number" defaultValue={dealRotting || 30} min="1" /></div>
+                            <div className="form-group">
+                                <label className="form-label">Monthly Quota ($)</label>
+                                <input name="monthlyQuota" className="form-input" type="number" defaultValue={monthlyQuota || 100000} min="0" step="1000" />
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Annual: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format((monthlyQuota || 100000) * 12)}</div>
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{ marginTop: 8 }}>💾 Save Deal Settings</button>
+                        </form>
                     </div>
                     <div className="chart-card">
                         <div className="chart-card-title">Your Account</div>
