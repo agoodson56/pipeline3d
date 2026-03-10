@@ -20,8 +20,8 @@ export async function onRequestPost(context) {
         const { prompt, systemPrompt, model } = body;
 
         if (!prompt) return json({ error: 'prompt is required' }, 400, request);
-        if (typeof prompt !== 'string' || prompt.length > 10000) {
-            return json({ error: 'prompt must be a string under 10,000 characters' }, 400, request);
+        if (typeof prompt !== 'string' || prompt.length > 50000) {
+            return json({ error: 'prompt must be a string under 50,000 characters' }, 400, request);
         }
 
         const geminiModel = model || 'gemini-2.0-flash';

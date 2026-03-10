@@ -1,15 +1,30 @@
 import { useState } from 'react';
 
-const FORM_FIELDS = [
-    { key: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'John Smith' },
-    { key: 'email', label: 'Email', type: 'email', required: true, placeholder: 'john@company.com' },
-    { key: 'phone', label: 'Phone', type: 'tel', required: false, placeholder: '(555) 123-4567' },
-    { key: 'company', label: 'Company', type: 'text', required: false, placeholder: 'Acme Corp' },
-    { key: 'message', label: 'Message', type: 'textarea', required: false, placeholder: 'Tell us about your project…' },
+const DEFAULT_FIELDS = [
+    { id: 'f1', key: 'name', label: 'Full Name', type: 'text', required: true, placeholder: 'John Smith' },
+    { id: 'f2', key: 'email', label: 'Email', type: 'email', required: true, placeholder: 'john@company.com' },
+    { id: 'f3', key: 'phone', label: 'Phone', type: 'tel', required: false, placeholder: '(555) 123-4567' },
+    { id: 'f4', key: 'company', label: 'Company', type: 'text', required: false, placeholder: 'Acme Corp' },
+    { id: 'f5', key: 'message', label: 'Message', type: 'textarea', required: false, placeholder: 'Tell us about your project…' },
 ];
+
+const FIELD_TYPES = [
+    { value: 'text', label: 'Text' },
+    { value: 'email', label: 'Email' },
+    { value: 'tel', label: 'Phone' },
+    { value: 'number', label: 'Number' },
+    { value: 'url', label: 'URL' },
+    { value: 'date', label: 'Date' },
+    { value: 'textarea', label: 'Long Text' },
+    { value: 'select', label: 'Dropdown' },
+];
+
+let fieldCounter = 10;
 
 export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
     const [tab, setTab] = useState('form');
+    const [fields, setFields] = useState(DEFAULT_FIELDS);
+    const [editingField, setEditingField] = useState(null);
     const [submissions, setSubmissions] = useState([
         { id: 1, name: 'Sarah Johnson', email: 'sarah@techcorp.com', company: 'TechCorp', message: 'Need a quote for CCTV, access control & intrusion — new office build, 25 doors, 40 cameras, perimeter alarm', date: 'Mar 5', status: 'new' },
         { id: 2, name: 'Mike Chen', email: 'mike@globalinc.com', company: 'Global Inc', message: 'Looking for structured cabling bid — 200 Cat6A drops, 2-story office, Sacramento area', date: 'Mar 3', status: 'contacted' },
@@ -26,7 +41,40 @@ export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
         defaultPipeline: 'Sales Pipeline',
         defaultStage: 'Lead In',
     });
-    const [showEmbed, setShowEmbed] = useState(false);
+
+    const addField = () => {
+        fieldCounter++;
+        const newField = {
+            id: 'f' + fieldCounter,
+            key: 'field_' + fieldCounter,
+            label: 'New Field',
+            type: 'text',
+            required: false,
+            placeholder: 'Enter value…',
+            options: '',
+        };
+        setFields(f => [...f, newField]);
+        setEditingField(newField.id);
+        toast('Field added — configure it on the right');
+    };
+
+    const removeField = (id) => {
+        setFields(f => f.filter(x => x.id !== id));
+        if (editingField === id) setEditingField(null);
+        toast('Field removed');
+    };
+
+    const moveField = (idx, dir) => {
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= fields.length) return;
+        const copy = [...fields];
+        [copy[idx], copy[newIdx]] = [copy[newIdx], copy[idx]];
+        setFields(copy);
+    };
+
+    const updateField = (id, updates) => {
+        setFields(f => f.map(x => x.id === id ? { ...x, ...updates } : x));
+    };
 
     const promoteToContact = async (sub) => {
         setSubmissions(ss => ss.map(s => s.id === sub.id ? { ...s, status: 'converted' } : s));
@@ -51,6 +99,7 @@ export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
 ></iframe>`;
 
     const statusColor = { new: '#3b82f6', contacted: '#f59e0b', converted: '#10b981' };
+    const activeField = fields.find(f => f.id === editingField);
 
     return (
         <div>
@@ -62,28 +111,132 @@ export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
 
             {tab === 'form' && (
                 <div className="dashboard-grid">
-                    {/* Form Preview */}
-                    <div className="chart-card">
-                        <div className="chart-card-title">Live Preview</div>
-                        <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', padding: 24, border: '1px solid var(--border)' }}>
-                            <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{formConfig.title}</h3>
-                            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>{formConfig.subtitle}</p>
-                            {FORM_FIELDS.map(f => (
-                                <div className="form-group" key={f.key} style={{ marginBottom: 12 }}>
-                                    <label className="form-label">{f.label} {f.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
-                                    {f.type === 'textarea' ? (
-                                        <textarea className="form-textarea" placeholder={f.placeholder} style={{ minHeight: 80 }} readOnly />
-                                    ) : (
-                                        <input className="form-input" type={f.type} placeholder={f.placeholder} readOnly />
-                                    )}
+                    {/* Left: Live Preview + Field List */}
+                    <div>
+                        <div className="chart-card" style={{ marginBottom: 12 }}>
+                            <div className="chart-card-title">Live Preview</div>
+                            <div style={{ background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', padding: 24, border: '1px solid var(--border)' }}>
+                                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{formConfig.title}</h3>
+                                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>{formConfig.subtitle}</p>
+                                {fields.map(f => (
+                                    <div className="form-group" key={f.id} style={{
+                                        marginBottom: 12,
+                                        borderRadius: 'var(--radius-md)',
+                                        outline: editingField === f.id ? '2px solid var(--accent)' : 'none',
+                                        outlineOffset: 4,
+                                        cursor: 'pointer',
+                                    }}
+                                        onClick={() => setEditingField(f.id)}
+                                    >
+                                        <label className="form-label">{f.label} {f.required && <span style={{ color: '#ef4444' }}>*</span>}</label>
+                                        {f.type === 'textarea' ? (
+                                            <textarea className="form-textarea" placeholder={f.placeholder} style={{ minHeight: 80 }} readOnly />
+                                        ) : f.type === 'select' ? (
+                                            <select className="form-input" disabled>
+                                                <option>{f.placeholder || 'Select…'}</option>
+                                                {(f.options || '').split(',').filter(Boolean).map((o, i) => (
+                                                    <option key={i}>{o.trim()}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input className="form-input" type={f.type} placeholder={f.placeholder} readOnly />
+                                        )}
+                                    </div>
+                                ))}
+                                <button className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>{formConfig.buttonText}</button>
+                            </div>
+                        </div>
+
+                        {/* Field list with reorder + delete */}
+                        <div className="chart-card">
+                            <div className="chart-card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>Form Fields ({fields.length})</span>
+                                <button className="btn btn-primary btn-sm" onClick={addField}>+ Add Field</button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                {fields.map((f, i) => (
+                                    <div key={f.id} style={{
+                                        display: 'flex', alignItems: 'center', gap: 8,
+                                        padding: '8px 10px', borderRadius: 'var(--radius-md)',
+                                        background: editingField === f.id ? 'var(--accent-bg, rgba(59,130,246,0.08))' : 'var(--bg-hover)',
+                                        border: editingField === f.id ? '1px solid var(--accent)' : '1px solid transparent',
+                                        cursor: 'pointer', transition: 'all .15s',
+                                    }}
+                                        onClick={() => setEditingField(f.id)}
+                                    >
+                                        {/* Reorder arrows */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, opacity: 0.5, fontSize: 11 }}>
+                                            <button onClick={e => { e.stopPropagation(); moveField(i, -1); }} style={{
+                                                background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: 'var(--text-secondary)', fontSize: 11, lineHeight: 1
+                                            }} disabled={i === 0}>▲</button>
+                                            <button onClick={e => { e.stopPropagation(); moveField(i, 1); }} style={{
+                                                background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: 'var(--text-secondary)', fontSize: 11, lineHeight: 1
+                                            }} disabled={i === fields.length - 1}>▼</button>
+                                        </div>
+                                        <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>
+                                            {f.label} {f.required && <span style={{ color: '#ef4444', fontSize: 11 }}>*</span>}
+                                        </span>
+                                        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            {FIELD_TYPES.find(t => t.value === f.type)?.label || f.type}
+                                        </span>
+                                        <button onClick={e => { e.stopPropagation(); removeField(f.id); }} style={{
+                                            background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 14, padding: '2px 4px', opacity: 0.6, lineHeight: 1,
+                                        }} title="Remove field">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                            {fields.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)', fontSize: 13 }}>
+                                    No fields yet. Click <strong>+ Add Field</strong> to get started.
                                 </div>
-                            ))}
-                            <button className="btn btn-primary" style={{ width: '100%', marginTop: 8 }}>{formConfig.buttonText}</button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Configuration */}
+                    {/* Right: Settings + Field Editor */}
                     <div>
+                        {/* Field editor (shows when a field is selected) */}
+                        {activeField && (
+                            <div className="chart-card" style={{ marginBottom: 12, border: '1px solid var(--accent)' }}>
+                                <div className="chart-card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>✏️ Edit Field</span>
+                                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingField(null)} style={{ fontSize: 12 }}>Done</button>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Label</label>
+                                    <input className="form-input" value={activeField.label}
+                                        onChange={e => updateField(activeField.id, { label: e.target.value, key: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '_') })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Field Type</label>
+                                    <select className="form-input" value={activeField.type}
+                                        onChange={e => updateField(activeField.id, { type: e.target.value })}>
+                                        {FIELD_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Placeholder</label>
+                                    <input className="form-input" value={activeField.placeholder}
+                                        onChange={e => updateField(activeField.id, { placeholder: e.target.value })} />
+                                </div>
+                                {activeField.type === 'select' && (
+                                    <div className="form-group">
+                                        <label className="form-label">Options (comma-separated)</label>
+                                        <input className="form-input" value={activeField.options || ''}
+                                            onChange={e => updateField(activeField.id, { options: e.target.value })}
+                                            placeholder="Option 1, Option 2, Option 3" />
+                                    </div>
+                                )}
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, marginTop: 4 }}>
+                                    <div className={`automation-toggle ${activeField.required ? 'on' : ''}`}
+                                        onClick={() => updateField(activeField.id, { required: !activeField.required })}>
+                                        <div className="automation-toggle-thumb" />
+                                    </div>
+                                    Required field
+                                </label>
+                            </div>
+                        )}
+
                         <div className="chart-card" style={{ marginBottom: 12 }}>
                             <div className="chart-card-title">Form Settings</div>
                             <div className="form-group">
@@ -207,3 +360,4 @@ export default function LeadCapture({ toast, refreshDeals, refreshContacts }) {
         </div>
     );
 }
+

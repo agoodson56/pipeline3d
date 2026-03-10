@@ -119,41 +119,67 @@ export default function SpecScanner({ deals, toast }) {
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef(null);
 
+    // Extract text from PDF using pdf.js
+    const extractPdfText = useCallback(async (file) => {
+        // Load pdf.js from CDN if not already loaded
+        if (!window.pdfjsLib) {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Failed to load PDF reader'));
+                document.head.appendChild(script);
+            });
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const textParts = [];
+        const maxPages = Math.min(pdf.numPages, 30); // cap at 30 pages
+        for (let i = 1; i <= maxPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const pageText = content.items.map(item => item.str).join(' ');
+            if (pageText.trim()) textParts.push(pageText);
+        }
+        return textParts.join('\n\n');
+    }, []);
+
     // Read text file content
     const readFile = useCallback((file) => {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+            return extractPdfText(file);
+        }
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target.result);
             reader.onerror = reject;
-
-            if (file.type === 'application/pdf') {
-                // For PDFs, read as text (basic extraction)
-                reader.readAsText(file);
-            } else {
-                reader.readAsText(file);
-            }
+            reader.readAsText(file);
         });
-    }, []);
+    }, [extractPdfText]);
 
     // Handle file upload
     const handleFileUpload = useCallback(async (file) => {
         if (!file) return;
-        const maxSize = 500 * 1024; // 500KB text limit for AI processing
-        if (file.size > maxSize && !file.type.includes('pdf')) {
-            toast('File too large. Please use files under 500KB.', 'error');
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        const maxSize = isPdf ? 2 * 1024 * 1024 : 500 * 1024; // 2MB for PDFs, 500KB for text
+        if (file.size > maxSize) {
+            toast(`File too large. Max ${isPdf ? '2MB' : '500KB'}.`, 'error');
             return;
         }
         setFileName(file.name);
         try {
+            toast(isPdf ? '📄 Reading PDF…' : '📄 Loading file…');
             const text = await readFile(file);
-            if (text.length < 50) {
+            if (!text || text.trim().length < 50) {
                 toast('File appears empty or unreadable. Try pasting the spec text directly.', 'error');
                 return;
             }
             // Trim to reasonable length for AI
-            const trimmed = text.substring(0, 9000);
+            const trimmed = text.substring(0, 30000);
             setSpecText(trimmed);
-            toast(`📄 Loaded: ${file.name} (${(text.length / 1024).toFixed(1)}KB)`);
+            toast(`📄 Loaded: ${file.name} (${(text.length / 1024).toFixed(1)}KB extracted)`);
         } catch (err) {
             toast('Failed to read file: ' + err.message, 'error');
         }
