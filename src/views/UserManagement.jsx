@@ -52,6 +52,21 @@ export default function UserManagement({ toast, currentUser }) {
         }
     };
 
+    const handleDeleteUser = async (user) => {
+        const confirmName = prompt(`⚠️ PERMANENTLY DELETE "${user.name}"?\n\nThis will:\n• Remove their account entirely\n• Reassign their deals, contacts & data to you\n\nType their name to confirm:`);
+        if (!confirmName || confirmName.trim().toLowerCase() !== user.name.trim().toLowerCase()) {
+            if (confirmName !== null) toast('Name did not match. Deletion cancelled.', 'error');
+            return;
+        }
+        try {
+            await api.deleteUser(user.id);
+            toast(`${user.name} has been permanently deleted`);
+            loadUsers();
+        } catch (err) {
+            toast(err.message, 'error');
+        }
+    };
+
     const handleRoleChange = async (userId, newRole) => {
         try {
             await api.updateUser(userId, { role: newRole });
@@ -165,6 +180,16 @@ export default function UserManagement({ toast, currentUser }) {
                                         style={{ fontSize: 12 }}
                                     >
                                         {user.status === 'deactivated' ? '✅' : '🚫'}
+                                    </button>
+                                )}
+                                {user.id !== currentUser?.id && (
+                                    <button
+                                        className="btn btn-ghost btn-sm"
+                                        onClick={() => handleDeleteUser(user)}
+                                        title="Permanently delete user"
+                                        style={{ fontSize: 12, color: '#ef4444' }}
+                                    >
+                                        🗑️
                                     </button>
                                 )}
                             </div>

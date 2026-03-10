@@ -149,6 +149,18 @@ export async function deactivateUser(userId, reactivate = false) {
     return data;
 }
 
+export async function deleteUser(userId) {
+    const token = getToken();
+    const res = await fetch(`${BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete-user', token, userId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+    return data;
+}
+
 export async function changePassword(currentPassword, newPassword, userId = null) {
     const token = getToken();
     const res = await fetch(`${BASE}/auth`, {

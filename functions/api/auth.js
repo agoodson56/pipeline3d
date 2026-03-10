@@ -3,7 +3,7 @@
  * PBKDF2 password hashing, login rate limiting, audit logging,
  * forced password change, session invalidation on pw change.
  *
- * POST /api/auth — body: { action: 'login' | 'logout' | 'me' | 'register' | 'list' | 'update' | 'deactivate' | 'change-password' }
+ * POST /api/auth — body: { action: 'login' | 'logout' | 'me' | 'register' | 'list' | 'update' | 'deactivate' | 'delete-user' | 'change-password' }
  */
 import { json, errorResponse, onRequestOptions as opts } from './_helpers.js';
 export { opts as onRequestOptions };
@@ -203,6 +203,8 @@ export async function onRequestPost({ request, env }) {
                 return handleUpdateUser(body, env, request);
             case 'deactivate':
                 return handleDeactivate(body, env, request);
+            case 'delete-user':
+                return handleDeleteUser(body, env, request);
             case 'change-password':
                 return handleChangePassword(body, env, request);
             case 'setup-2fa':
@@ -440,6 +442,36 @@ async function handleDeactivate({ token, userId, reactivate }, env, request) {
     }
 
     await audit(env, request, reactivate ? 'user_reactivated' : 'user_deactivated', admin.id, admin.email, `User ${userId}`);
+
+    return json({ success: true }, 200, request);
+}
+
+// ─── DELETE USER (admin only — permanent removal) ───────────
+async function handleDeleteUser({ token, userId }, env, request) {
+    const admin = await getSessionUser(token, env);
+    if (!admin || admin.role !== 'admin') return json({ error: 'Admin access required' }, 403, request);
+    if (!userId) return json({ error: 'userId is required' }, 400, request);
+    if (userId === admin.id) return json({ error: 'Cannot delete yourself' }, 400, request);
+
+    // Get user info for audit before deletion
+    const targetUser = await env.DB.prepare('SELECT email, name FROM users WHERE id = ?').bind(userId).first();
+    if (!targetUser) return json({ error: 'User not found' }, 404, request);
+
+    // Re-assign owned data to the admin performing the deletion
+    const tables = ['deals', 'contacts', 'companies', 'activities', 'emails'];
+    for (const table of tables) {
+        try {
+            await env.DB.prepare(`UPDATE ${table} SET owner_id = ? WHERE owner_id = ?`).bind(admin.id, userId).run();
+        } catch { /* table may not have owner_id column */ }
+    }
+
+    // Delete sessions
+    await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
+
+    // Delete the user
+    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+
+    await audit(env, request, 'user_deleted', admin.id, admin.email, `Deleted user ${targetUser.email} (${targetUser.name}), data reassigned to admin`);
 
     return json({ success: true }, 200, request);
 }
